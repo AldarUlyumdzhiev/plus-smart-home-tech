@@ -14,10 +14,6 @@
     <name>collector</name>
     <description>Collector service: accepts JSON, maps to Avro, sends to Kafka</description>
 
-    <properties>
-        <start-class>ru.yandex.practicum.kafka.telemetry.collector.CollectorApplication</start-class>
-    </properties>
-
     <dependencies>
         <!-- Avro модели -->
         <dependency>
