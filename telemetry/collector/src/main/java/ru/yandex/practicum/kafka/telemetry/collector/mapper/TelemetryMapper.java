@@ -54,7 +54,7 @@ public class TelemetryMapper {
         Object payload = switch (dto.getKind()) {
             case DEVICE_ADDED -> DeviceAddedEventAvro.newBuilder()
                     .setId(req(dto.getDeviceId(), "deviceId"))
-                    .setType(DeviceTypeAvro.valueOf(req(dto.getDeviceType(), "deviceType").name()))
+                    .setType(mapDeviceType(req(dto.getDeviceType(), "deviceType")))
                     .build();
             case DEVICE_REMOVED -> DeviceRemovedEventAvro.newBuilder()
                     .setId(req(dto.getDeviceId(), "deviceId"))
@@ -67,6 +67,16 @@ public class TelemetryMapper {
                 .setPayload(payload)
                 .build();
     }
+
+    private static DeviceTypeAvro mapDeviceType(DeviceTypeDto d) {
+        try {
+            return DeviceTypeAvro.valueOf(d.name()); // например LIGHT_SENSOR
+        } catch (IllegalArgumentException e) {
+            String base = d.name().replace("_SENSOR", "");
+            return DeviceTypeAvro.valueOf(base);
+        }
+    }
+
 
     private static <T> T req(T v, String name) {
         if (v == null) throw new IllegalArgumentException(name + " is required");

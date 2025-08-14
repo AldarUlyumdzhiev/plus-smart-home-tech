@@ -12,12 +12,13 @@ public enum DeviceTypeDto {
     @JsonCreator
     public static DeviceTypeDto from(String raw) {
         if (raw == null) return null;
-        return switch (raw) {
-            case "MOTION_SENSOR", "MOTION" -> MOTION_SENSOR;
-            case "TEMPERATURE_SENSOR", "TEMPERATURE" -> TEMPERATURE_SENSOR;
-            case "LIGHT_SENSOR", "LIGHT" -> LIGHT_SENSOR;
-            case "CLIMATE_SENSOR", "CLIMATE" -> CLIMATE_SENSOR;
-            case "SWITCH_SENSOR", "SWITCH" -> SWITCH_SENSOR;
+        String v = raw.trim().toUpperCase();
+        return switch (v) {
+            case "MOTION", "MOTION_SENSOR" -> MOTION_SENSOR;
+            case "TEMPERATURE", "TEMPERATURE_SENSOR" -> TEMPERATURE_SENSOR;
+            case "LIGHT", "LIGHT_SENSOR" -> LIGHT_SENSOR;
+            case "CLIMATE", "CLIMATE_SENSOR" -> CLIMATE_SENSOR;
+            case "SWITCH", "SWITCH_SENSOR" -> SWITCH_SENSOR;
             default -> throw new IllegalArgumentException("Unknown deviceType: " + raw);
         };
     }

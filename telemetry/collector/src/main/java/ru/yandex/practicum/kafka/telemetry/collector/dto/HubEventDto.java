@@ -12,7 +12,6 @@ public class HubEventDto {
     @JsonAlias({"kind", "eventType"})
     private HubEventKind kind;
 
-    // для DEVICE_ADDED / DEVICE_REMOVED
     private String deviceId;
-    private DeviceTypeDto deviceType; // для DEVICE_ADDED
+    private DeviceTypeDto deviceType;
 }
