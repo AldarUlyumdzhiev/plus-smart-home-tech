@@ -82,10 +82,7 @@ public class TelemetryMapper {
     }
 
     private static DeviceTypeAvro mapDeviceType(DeviceTypeDto d) {
-        try { return DeviceTypeAvro.valueOf(d.name()); }
-        catch (IllegalArgumentException e) {
-            return DeviceTypeAvro.valueOf(d.name().replace("_SENSOR",""));
-        }
+        return DeviceTypeAvro.valueOf(d.name());
     }
 
     private static List<ScenarioConditionAvro> mapConditions(List<ScenarioConditionDto> src) {
