@@ -8,21 +8,26 @@ import java.util.List;
 
 @Data
 public class HubEventDto {
+    @JsonAlias({"hubId","hub_id"})
     private String hubId;
+
+    @JsonAlias({"timestamp","ts","time"})
     private Instant timestamp;
 
-    @JsonAlias({"kind","eventType"})
+    @JsonAlias({"kind","eventType","type"})
     private HubEventKind kind;
 
-    // для DEVICE_
-    @JsonAlias({"deviceId","id"})
+    // DEVICE_*
+    @JsonAlias({"deviceId","device_id","id"})
     private String deviceId;
-    @JsonAlias({"deviceType","type"})
+
+    @JsonAlias({"deviceType","device_type"})
     private DeviceTypeDto deviceType;
 
-    // для SCENARIO_
+    // SCENARIO_*
     @JsonAlias({"scenarioName","name"})
     private String scenarioName;
+
     private List<ScenarioConditionDto> conditions;
     private List<DeviceActionDto> actions;
 }

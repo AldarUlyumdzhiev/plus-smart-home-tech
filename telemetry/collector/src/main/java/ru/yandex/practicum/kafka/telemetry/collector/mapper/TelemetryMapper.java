@@ -53,22 +53,21 @@ public class TelemetryMapper {
     }
 
     public HubEventAvro toAvro(HubEventDto dto) {
-        Object payload = switch (dto.getKind()) {
+        HubEventKind kind = req(dto.getKind(), "kind");
+
+        Object payload = switch (kind) {
             case DEVICE_ADDED -> DeviceAddedEventAvro.newBuilder()
                     .setId(req(dto.getDeviceId(), "deviceId"))
                     .setType(mapDeviceType(req(dto.getDeviceType(), "deviceType")))
                     .build();
-
             case DEVICE_REMOVED -> DeviceRemovedEventAvro.newBuilder()
                     .setId(req(dto.getDeviceId(), "deviceId"))
                     .build();
-
             case SCENARIO_ADDED -> ScenarioAddedEventAvro.newBuilder()
                     .setName(req(dto.getScenarioName(), "scenarioName"))
                     .setConditions(mapConditions(dto.getConditions()))
                     .setActions(mapActions(dto.getActions()))
                     .build();
-
             case SCENARIO_REMOVED -> ScenarioRemovedEventAvro.newBuilder()
                     .setName(req(dto.getScenarioName(), "scenarioName"))
                     .build();
