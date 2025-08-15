@@ -12,6 +12,9 @@ public class HubEventDto {
     @JsonAlias({"kind", "eventType"})
     private HubEventKind kind;
 
+    @JsonAlias({"deviceId", "id"})
     private String deviceId;
+
+    @JsonAlias({"deviceType", "type"})
     private DeviceTypeDto deviceType;
 }

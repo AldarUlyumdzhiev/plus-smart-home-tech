@@ -19,10 +19,10 @@ public class TelemetryProducer {
 
     private final KafkaTemplate<String, byte[]> kafka;
 
-    @Value("${telemetry.topics.sensors}")
+    @Value("${telemetry.topics.sensors:telemetry.sensors.v1}")
     private String sensorsTopic;
 
-    @Value("${telemetry.topics.hubs}")
+    @Value("${telemetry.topics.hubs:telemetry.hubs.v1}")
     private String hubsTopic;
 
     public void sendSensor(SensorEventAvro event) throws Exception {
