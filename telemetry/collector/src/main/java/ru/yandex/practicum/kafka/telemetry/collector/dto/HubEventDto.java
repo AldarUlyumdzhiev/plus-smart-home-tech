@@ -1,22 +1,28 @@
 package ru.yandex.practicum.kafka.telemetry.collector.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+
 import java.time.Instant;
+import java.util.List;
 
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class HubEventDto {
     private String hubId;
     private Instant timestamp;
 
-    @JsonAlias({"kind", "eventType", "type"})
+    @JsonAlias({"kind","eventType"})
     private HubEventKind kind;
 
-    @JsonAlias({"deviceId", "id"})
+    // для DEVICE_
+    @JsonAlias({"deviceId","id"})
     private String deviceId;
-
-    @JsonAlias({"deviceType"})
+    @JsonAlias({"deviceType","type"})
     private DeviceTypeDto deviceType;
+
+    // для SCENARIO_
+    @JsonAlias({"scenarioName","name"})
+    private String scenarioName;
+    private List<ScenarioConditionDto> conditions;
+    private List<DeviceActionDto> actions;
 }

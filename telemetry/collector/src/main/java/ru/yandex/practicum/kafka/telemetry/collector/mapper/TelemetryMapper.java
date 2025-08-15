@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.collector.dto.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
+import java.util.List;
+
 @Component
 public class TelemetryMapper {
 
@@ -56,8 +58,19 @@ public class TelemetryMapper {
                     .setId(req(dto.getDeviceId(), "deviceId"))
                     .setType(mapDeviceType(req(dto.getDeviceType(), "deviceType")))
                     .build();
+
             case DEVICE_REMOVED -> DeviceRemovedEventAvro.newBuilder()
                     .setId(req(dto.getDeviceId(), "deviceId"))
+                    .build();
+
+            case SCENARIO_ADDED -> ScenarioAddedEventAvro.newBuilder()
+                    .setName(req(dto.getScenarioName(), "scenarioName"))
+                    .setConditions(mapConditions(dto.getConditions()))
+                    .setActions(mapActions(dto.getActions()))
+                    .build();
+
+            case SCENARIO_REMOVED -> ScenarioRemovedEventAvro.newBuilder()
+                    .setName(req(dto.getScenarioName(), "scenarioName"))
                     .build();
         };
 
@@ -69,14 +82,45 @@ public class TelemetryMapper {
     }
 
     private static DeviceTypeAvro mapDeviceType(DeviceTypeDto d) {
-        try {
-            return DeviceTypeAvro.valueOf(d.name()); // например LIGHT_SENSOR
-        } catch (IllegalArgumentException e) {
-            String base = d.name().replace("_SENSOR", "");
-            return DeviceTypeAvro.valueOf(base);
+        try { return DeviceTypeAvro.valueOf(d.name()); }
+        catch (IllegalArgumentException e) {
+            return DeviceTypeAvro.valueOf(d.name().replace("_SENSOR",""));
         }
     }
 
+    private static List<ScenarioConditionAvro> mapConditions(List<ScenarioConditionDto> src) {
+        if (src == null || src.isEmpty()) return List.of();
+        return src.stream().map(TelemetryMapper::toAvro).toList();
+    }
+
+    private static ScenarioConditionAvro toAvro(ScenarioConditionDto c) {
+        Object v = c.getValue();
+        Object union;
+        if (v == null) union = null;
+        else if (v instanceof Boolean b) union = b;
+        else if (v instanceof Number n) union = Integer.valueOf(n.intValue());
+        else throw new IllegalArgumentException("conditions.value must be int or boolean");
+
+        return ScenarioConditionAvro.newBuilder()
+                .setSensorId(req(c.getSensorId(), "conditions.sensorId"))
+                .setType(ConditionTypeAvro.valueOf(req(c.getType(),"conditions.type").name()))
+                .setOperation(ConditionOperationAvro.valueOf(req(c.getOperation(),"conditions.operation").name()))
+                .setValue(union)
+                .build();
+    }
+
+    private static List<DeviceActionAvro> mapActions(List<DeviceActionDto> src) {
+        if (src == null || src.isEmpty()) return List.of();
+        return src.stream().map(TelemetryMapper::toAvro).toList();
+    }
+
+    private static DeviceActionAvro toAvro(DeviceActionDto a) {
+        return DeviceActionAvro.newBuilder()
+                .setSensorId(req(a.getSensorId(), "actions.sensorId"))
+                .setType(ActionTypeAvro.valueOf(req(a.getType(),"actions.type").name()))
+                .setValue(a.getValue()) // может быть null
+                .build();
+    }
 
     private static <T> T req(T v, String name) {
         if (v == null) throw new IllegalArgumentException(name + " is required");
