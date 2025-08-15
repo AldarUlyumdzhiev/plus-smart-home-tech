@@ -6,25 +6,25 @@ import java.time.Instant;
 
 @Data
 public class SensorEventDto {
-    private String id;
-    private String hubId;
-    private Instant timestamp;
+    String id;
+    String hubId;
+    Instant timestamp;
 
     @JsonAlias({"eventType", "type"})
-    private SensorPayloadType type;
+    SensorPayloadType type;
 
     // LIGHT
-    private Integer linkQuality;
-    private Integer luminosity;
+    Integer linkQuality;
+    Integer luminosity;
     // MOTION
-    private Boolean motion;
-    private Integer voltage;
+    Boolean motion;
+    Integer voltage;
     // SWITCH
-    private Boolean state;
+    Boolean state;
     // TEMPERATURE
-    private Integer temperatureC;
-    private Integer temperatureF;
+    Integer temperatureC;
+    Integer temperatureF;
     // CLIMATE
-    private Integer humidity;
-    private Integer co2Level;
+    Integer humidity;
+    Integer co2Level;
 }
