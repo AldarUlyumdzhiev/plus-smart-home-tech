@@ -1,10 +1,14 @@
 package ru.yandex.practicum.kafka.telemetry.collector.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
+
 import java.time.Instant;
 
 @Data
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class SensorEventDto {
     String id;
     String hubId;

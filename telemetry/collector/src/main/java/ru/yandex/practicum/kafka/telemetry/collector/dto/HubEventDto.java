@@ -1,6 +1,7 @@
 package ru.yandex.practicum.kafka.telemetry.collector.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
@@ -8,7 +9,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Data
-@FieldDefaults
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class HubEventDto {
     @JsonAlias({"hubId","hub_id"})
     String hubId;
