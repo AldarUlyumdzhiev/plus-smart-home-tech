@@ -1,10 +1,8 @@
 package ru.yandex.practicum.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.model.enums.ConditionOperation;
 import ru.yandex.practicum.model.enums.ConditionType;
 
@@ -14,23 +12,24 @@ import ru.yandex.practicum.model.enums.ConditionType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class Condition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private ConditionType type;
+    ConditionType type;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "operation")
-    private ConditionOperation operation;
+    ConditionOperation operation;
 
     @Column(name = "value_int")
-    private Integer valueInt;
+    Integer valueInt;
 
     @Column(name = "value_bool")
-    private Boolean valueBool;
+    Boolean valueBool;
 }

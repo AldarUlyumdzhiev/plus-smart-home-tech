@@ -1,10 +1,8 @@
 package ru.yandex.practicum.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.model.enums.ActionType;
 
 @Entity
@@ -13,16 +11,17 @@ import ru.yandex.practicum.model.enums.ActionType;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level= AccessLevel.PRIVATE)
 public class Action {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private ActionType type;
+    ActionType type;
 
     @Column(name = "value")
-    private Integer value;
+    Integer value;
 }
