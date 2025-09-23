@@ -1,13 +1,12 @@
-drop table if exists products;
+DROP TABLE IF EXISTS product CASCADE;
 
-CREATE TABLE IF NOT EXISTS products (
-    product_id          VARCHAR            PRIMARY KEY,
-    product_name        VARCHAR            NOT NULL,
-    description         VARCHAR            NOT NULL,
-    image_src           VARCHAR            NOT NULL,
-    quantity_state      VARCHAR            NOT NULL,
-    product_state       VARCHAR            NOT NULL,
-    rating              DOUBLE PRECISION,
-    product_category    VARCHAR            NOT NULL,
-    price               DOUBLE PRECISION   NOT NULL
+CREATE TABLE product (
+    product_id UUID PRIMARY KEY,
+    product_name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    image_src VARCHAR(255),
+    quantity_state VARCHAR(32) NOT NULL,
+    product_state VARCHAR(32) NOT NULL,
+    product_category VARCHAR(32) NOT NULL,
+    price NUMERIC(19, 2) NOT NULL
 );
