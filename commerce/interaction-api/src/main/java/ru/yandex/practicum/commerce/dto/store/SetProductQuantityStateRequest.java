@@ -13,7 +13,8 @@ import java.util.UUID;
 @Builder
 public class SetProductQuantityStateRequest {
     @NotNull
-    UUID productId;
+    UUID productId; // идентификатор товара
 
-    QuantityState quantityState;
+    //    @NotNull
+    QuantityState quantityState; // статус, перечисляющий состояние остатка как свойства товара
 }

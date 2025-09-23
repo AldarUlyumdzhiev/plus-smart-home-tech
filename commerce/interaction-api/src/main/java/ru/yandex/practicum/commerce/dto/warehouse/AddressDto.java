@@ -12,9 +12,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class AddressDto {
-    String country;
-    String city;
-    String street;
-    String house;
-    String flat;
+    String country; // страна
+    String city; // город
+    String street; // улица
+    String house; // дом
+    String flat; // квартира
 }

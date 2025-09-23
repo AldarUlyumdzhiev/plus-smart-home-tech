@@ -14,11 +14,11 @@ import lombok.experimental.FieldDefaults;
 @Getter
 public class BookedProductsDto {
     @NotNull
-    Double deliveryWeight;
+    Double deliveryWeight; // общий вес доставки
 
     @NotNull
-    Double deliveryVolume;
+    Double deliveryVolume; // общий объем доставки
 
     @NotNull
-    Boolean fragile;
+    Boolean fragile; // есть ли хрупкие вещи в доставке
 }

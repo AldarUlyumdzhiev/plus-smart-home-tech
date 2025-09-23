@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class KafkaClient {
 
+    // Кешируем продюсеры и консьюмеры по их свойствам
     private final Map<Map<String, String>, Producer<String, SpecificRecordBase>> producersCache = new ConcurrentHashMap<>();
     private final Map<Map<String, String>, Consumer<String, SpecificRecordBase>> consumersCache = new ConcurrentHashMap<>();
 

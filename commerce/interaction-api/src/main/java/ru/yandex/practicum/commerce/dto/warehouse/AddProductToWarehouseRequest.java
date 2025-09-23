@@ -14,9 +14,9 @@ import java.util.UUID;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddProductToWarehouseRequest {
-    UUID productId;
+    UUID productId; // идентификатор товара в БД
 
     @NotNull
     @Min(value = 1, message = "Quantity must be equal to 1 or more")
-    Long quantity;
+    Long quantity; // количество единиц товара для добавления на склад
 }

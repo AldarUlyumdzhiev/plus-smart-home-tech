@@ -15,23 +15,23 @@ import java.util.UUID;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductDto {
-    UUID productId;
+    UUID productId; // идентификатор товара в БД
 
     @NotBlank
-    String productName;
+    String productName; // наименование товара
 
     @NotBlank
-    String description;
+    String description; // описание товара
 
-    String imageSrc;
-
-    @NotNull
-    QuantityState quantityState;
+    String imageSrc; // ссылка на картинку во внешнем хранилище или SVG
 
     @NotNull
-    ProductState productState;
+    QuantityState quantityState; // статус, перечисляющий состояние остатка как свойства товара
 
-    ProductCategory productCategory;
+    @NotNull
+    ProductState productState; // статус товара
+
+    ProductCategory productCategory; // категория товара
 
     @NotNull
     @Min(value = 1, message = "Price should be less than 1")

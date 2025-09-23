@@ -15,8 +15,8 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShoppingCartDto {
     @NotNull
-    UUID shoppingCartId;
+    UUID shoppingCartId; // идентификатор корзины в БД
 
     @NotNull
-    Map<UUID, Long> products;
+    Map<UUID, Long> products; // отображение идентификатора товара на отобранное количество
 }

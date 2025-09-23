@@ -15,9 +15,9 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChangeProductQuantityRequest {
     @NotNull
-    UUID productId;
+    UUID productId; // идентификатор товара
 
     @NotNull
     @PositiveOrZero(message = "The new quantity cannot be negative")
-    Long newQuantity;
+    Long newQuantity; // новое количество товара
 }

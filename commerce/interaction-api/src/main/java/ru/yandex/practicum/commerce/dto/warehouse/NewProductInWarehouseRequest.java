@@ -15,14 +15,14 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewProductInWarehouseRequest {
     @NotNull
-    UUID productId;
+    UUID productId; // идентификатор товара в БД
 
-    boolean fragile;
+    boolean fragile; // признак хрупкости
 
     @NotNull
-    DimensionDto dimension;
+    DimensionDto dimension; // размеры товара
 
     @NotNull
     @Min(value = 1, message = "Weight must be 1 or greater")
-    Double weight;
+    Double weight; // вес товара
 }

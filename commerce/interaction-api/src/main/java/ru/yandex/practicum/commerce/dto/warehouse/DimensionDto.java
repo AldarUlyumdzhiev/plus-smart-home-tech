@@ -14,13 +14,13 @@ import lombok.experimental.FieldDefaults;
 public class DimensionDto {
     @NotBlank
     @Min(value = 1, message = "Width must be greater than 0")
-    Double width;
+    Double width; // ширина
 
     @NotBlank
     @Min(value = 1, message = "Height must be greater than 0")
-    Double height;
+    Double height; // высота
 
     @NotBlank
     @Min(value = 1, message = "Depth must be greater than 0")
-    Double depth;
+    Double depth; // глубина
 }
