@@ -2,8 +2,10 @@ package ru.yandex.practicum.entities.embedded;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -12,15 +14,14 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level= AccessLevel.PRIVATE)
 public class ScenarioActionId implements Serializable {
 
     @Column(name = "scenario_id")
-    Long scenarioId;
+    private Long scenarioId;
 
     @Column(name = "sensor_id")
-    String sensorId;
+    private String sensorId;
 
     @Column(name = "action_id")
-    Long actionId;
+    private Long actionId;
 }

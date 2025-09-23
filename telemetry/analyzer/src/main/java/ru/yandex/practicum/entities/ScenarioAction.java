@@ -1,8 +1,10 @@
 package ru.yandex.practicum.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.entities.embedded.ScenarioActionId;
 
 @Entity
@@ -11,24 +13,23 @@ import ru.yandex.practicum.entities.embedded.ScenarioActionId;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level= AccessLevel.PRIVATE)
 public class ScenarioAction {
 
     @EmbeddedId
-    ScenarioActionId id;
+    private ScenarioActionId id;
 
     @ManyToOne
     @MapsId("scenarioId") // связываем с Scenario через составной ключ
     @JoinColumn(name = "scenario_id")
-    Scenario scenario;
+    private Scenario scenario;
 
     @ManyToOne
     @MapsId("sensorId") // связываем с Sensor через составной ключ
     @JoinColumn(name = "sensor_id")
-    Sensor sensor;
+    private Sensor sensor;
 
     @ManyToOne
     @MapsId("actionId") // связываем с Action через составной ключ
     @JoinColumn(name = "action_id")
-    Action action;
+    private Action action;
 }

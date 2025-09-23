@@ -19,10 +19,6 @@
         <module>telemetry</module>
         <module>infra</module>
         <module>commerce</module>
-        <module>commerce/shopping-store</module>
-        <module>commerce/interaction-api</module>
-        <module>commerce/shopping-cart</module>
-        <module>commerce/warehouse</module>
     </modules>
 
     <properties>
@@ -34,12 +30,15 @@
         <grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
         <protobuf.version>3.23.4</protobuf.version>
         <grpc.version>1.63.0</grpc.version>
+        <lombok.version>1.18.36</lombok.version>
         <spring-cloud-dependencies.version>2023.0.3</spring-cloud-dependencies.version>
-
+        <postgresql.version>42.7.5</postgresql.version>
+        <modelmapper.version>3.2.0</modelmapper.version>
         <!--       Plugins       -->
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <avro-maven-plugin.version>${avro.version}</avro-maven-plugin.version>
         <protobuf-plugin.version>2.4.0</protobuf-plugin.version>
+        <spring-kafka.version>3.2.4</spring-kafka.version>
     </properties>
 
     <dependencyManagement>
@@ -60,14 +59,6 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc-openapi-starter.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud-dependencies.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
 
             <!--    GRPC dependencies management        -->
@@ -96,6 +87,14 @@
             </dependency>
 
             <!--    / GRPC dependencies management        -->
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud-dependencies.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

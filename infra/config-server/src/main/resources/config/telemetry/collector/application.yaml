@@ -1,14 +1,26 @@
-topic:
-  telemetry-sensors: telemetry.sensors.v1
-  telemetry-hubs: telemetry.hubs.v1
-
 spring:
+  application:
+    name: collector
   kafka:
+    bootstrap-servers: localhost:9092
     producer:
-      bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: ru.practicum.serializer.CollectorAvroSerializer
+      value-serializer: kafka.serializer.GeneralAvroSerializer
+      client-id: telemetry.collector
+
+logging:
+  level:
+    ru.practicum.telemetry: TRACE
+    org:
+      springframework: ERROR
+      apache.kafka: WARN
+
+collector:
+  kafka:
+    topics:
+      sensors-events: telemetry.sensors.v1
+      hubs-events: telemetry.hubs.v1
 
 grpc:
   server:
-    port: 9090
+    port: 59091

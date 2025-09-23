@@ -1,8 +1,10 @@
 package ru.yandex.practicum.entities;
 
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,18 +15,17 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level= AccessLevel.PRIVATE)
 public class Scenario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    Long id;
+    private Long id;
 
     @Column(name = "hub_id")
-    String hubId;
+    private String hubId;
 
     @Column(name = "name")
-    String name;
+    private String name;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
@@ -33,7 +34,7 @@ public class Scenario {
             inverseJoinColumns = @JoinColumn(name = "action_id")
     )
     @MapKeyColumn(name = "sensor_id") // ключ карты — sensor_id из таблицы связей
-    Map<String, Action> actions = new HashMap<>();
+    private Map<String, Action> actions = new HashMap<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
@@ -42,5 +43,5 @@ public class Scenario {
             inverseJoinColumns = @JoinColumn(name = "condition_id")
     )
     @MapKeyColumn(name = "sensor_id")
-    Map<String, Condition> conditions = new HashMap<>();
+    private Map<String, Condition> conditions = new HashMap<>();
 }
