@@ -7,7 +7,7 @@ protocol SensorEventProtocol {
 		int co2_level;
 	}
 
-	record LigntSensorAvro {
+	record LightSensorAvro {
 		int link_quality;
 		int luminosity;
 	}
@@ -22,21 +22,20 @@ protocol SensorEventProtocol {
 		boolean state;
 	}
 
-	record TemparatureSensorAvro {
-		int temparature_c;
+	record TemperatureSensorAvro {
+		string id;
+		string hubId;
+		@logicalType("timestamp-millis")
+		long timestamp;
+		int temperature_c;
 		int temperature_f;
 	}
 
 	record SensorEventAvro {
 		string id;
 		string hubId;
-		timestamp_ms timestamp;
-		union{
-			ClimateSensorAvro,
-			LigntSensorAvro,
-			MotionSensorAvro,
-			SwitchSensorAvro,
-			TemparatureSensorAvro
-		} payload;
+		@logicalType("timestamp-millis")
+		long timestamp;
+		union {ClimateSensorAvro, LightSensorAvro, MotionSensorAvro, SwitchSensorAvro, TemperatureSensorAvro} payload;
 	}
 }

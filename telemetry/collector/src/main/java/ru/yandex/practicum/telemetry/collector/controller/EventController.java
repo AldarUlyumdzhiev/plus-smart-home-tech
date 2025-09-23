@@ -4,63 +4,73 @@ import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-import ru.yandex.practicum.telemetry.collector.service.hub.HubService;
-import ru.yandex.practicum.telemetry.collector.service.sensor.SensorService;
+import ru.yandex.practicum.telemetry.collector.service.handler.HubProtoHandler;
+import ru.yandex.practicum.telemetry.collector.service.handler.SensorProtoHandler;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Slf4j
 @GrpcService
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
-    Map<HubEventProto.PayloadCase, HubService> hubEventHandlerMap;
-    Map<SensorEventProto.PayloadCase, SensorService> sensorEventHandlerMap;
+    private final Map<SensorEventProto.PayloadCase, SensorProtoHandler> sensorProtoHandlers;
+    private final Map<HubEventProto.PayloadCase, HubProtoHandler> hubProtoHandlers;
 
-    @Autowired
-    public EventController(Set<HubService> hubEventHandler, Set<SensorService> sensorEventHandler) {
-        this.hubEventHandlerMap = hubEventHandler.stream()
-                .collect(Collectors.toMap(HubService::getMessageType, Function.identity()));
-        this.sensorEventHandlerMap = sensorEventHandler.stream()
-                .collect(Collectors.toMap(SensorService::getMessageType, Function.identity()));
+
+    public EventController(Set<SensorProtoHandler> sensorEventHandlers, Set<HubProtoHandler> hubEventHandlers) {
+        this.sensorProtoHandlers = sensorEventHandlers.stream()
+                .collect(Collectors.toMap(SensorProtoHandler::getMessageType, Function.identity()));
+        this.hubProtoHandlers = hubEventHandlers.stream()
+                .collect(Collectors.toMap(HubProtoHandler::getMessageType, Function.identity()));
+
     }
 
     @Override
-    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+        log.info("\nEventController.collectSensorEvent: (toString) accepted {}", request.toString());
+        if (request.getPayloadCase().equals(SensorEventProto.PayloadCase.CLIMATE_SENSOR_EVENT)) {
+            log.info("\nUnknown fields: {}", request.getClimateSensorEvent().getUnknownFields());
+        }
+        if (!sensorProtoHandlers.containsKey(request.getPayloadCase())) {
+            throw new IllegalArgumentException("Handler for request" + request + " not found.");
+        }
         try {
-            hubEventHandlerMap.get(request.getPayloadCase()).handle(request);
+            sensorProtoHandlers.get(request.getPayloadCase()).handle(request);
+
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
-            log.info("Successfully handled Hub event: {}", request);
         } catch (Exception e) {
-            log.error("Error handling Hub event: {} - {}", request, e.getMessage(), e);
-            responseObserver.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(e.getLocalizedMessage())
-                    .withCause(e)
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
             ));
         }
     }
 
     @Override
-    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
+        log.info("\nEventController.collectHubEvent: accepted {}", request);
+        if (!hubProtoHandlers.containsKey(request.getPayloadCase())) {
+            throw new IllegalArgumentException("Handler for request" + request + " not found.");
+        }
         try {
-            sensorEventHandlerMap.get(request.getPayloadCase()).handle(request);
+            hubProtoHandlers.get(request.getPayloadCase()).handle(request);
+
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
-            log.info("Successfully handled Sensor event: {}", request);
         } catch (Exception e) {
-            log.error("Error handling Sensor event: {} - {}", request, e.getMessage(), e);
-            responseObserver.onError(new StatusRuntimeException(Status.INTERNAL.withDescription(e.getLocalizedMessage())
-                    .withCause(e)
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
             ));
         }
     }
