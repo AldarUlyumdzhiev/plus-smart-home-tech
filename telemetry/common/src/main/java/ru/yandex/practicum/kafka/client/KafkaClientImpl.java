@@ -16,7 +16,7 @@ import java.util.Properties;
 
 @Component
 @RequiredArgsConstructor
-public class KafkaClientImpl implements KafkaClient {
+public class KafkaClientImpl extends KafkaClient {
 
     private final List<Producer<String, SpecificRecordBase>> producers = new ArrayList<>();
     private final List<Consumer<String, SpecificRecordBase>> consumers = new ArrayList<>();
@@ -37,14 +37,12 @@ public class KafkaClientImpl implements KafkaClient {
         return consumer;
     }
 
-    @Override
     public KafkaProducer<String, SpecificRecordBase> getKafkaProducer(Map<String, String> properties) {
         KafkaProducer<String, SpecificRecordBase> producer = createKafkaProducer(properties);
         kafkaProducers.add(producer);
         return producer;
     }
 
-    @Override
     public KafkaConsumer<String, SpecificRecordBase> getKafkaConsumer(Map<String, String> properties) {
         KafkaConsumer<String, SpecificRecordBase> consumer = createKafkaConsumer(properties);
         kafkaConsumers.add(consumer);

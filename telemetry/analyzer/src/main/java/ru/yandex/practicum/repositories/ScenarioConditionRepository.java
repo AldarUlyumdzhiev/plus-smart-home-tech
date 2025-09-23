@@ -6,7 +6,5 @@ import ru.yandex.practicum.entities.ScenarioConditions;
 
 @Repository
 public interface ScenarioConditionRepository extends JpaRepository<ScenarioConditions, Long> {
-
     void deleteBySensorId(String sensorId);
-
 }
