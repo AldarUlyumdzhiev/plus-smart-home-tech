@@ -1,47 +1,28 @@
 package ru.yandex.practicum.telemetry.collector.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.stereotype.Service;
-import ru.yandex.practicum.kafka.client.KafkaClient;
-import ru.yandex.practicum.telemetry.collector.configuration.CollectorProducerConfig;
-import ru.yandex.practicum.TopicType;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.telemetry.collector.config.KafkaProducerProperties;
 
-import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
 
-@Service
-@RequiredArgsConstructor
+@Component
 @Slf4j
 public class KafkaEventProducer {
+    private final Producer<String, SpecificRecordBase> producer;
 
-    private final CollectorProducerConfig kafkaConfig;
-
-    private final KafkaClient client;
-
-    public void sendEvent(TopicType topicType, SpecificRecordBase event) {
-        log.trace("\nKafkaEventProducer: event {}", event);
-
-        String topic = kafkaConfig.getProducer().getTopics().get(topicType);
-        if (topic == null) {
-            throw new IllegalArgumentException("Unknown topic type: " + topicType);
-        }
-
-        ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(topic, null, event);
-        log.trace("\nKafkaEventProducer: record {}, class {}", record,
-                record.value() != null ? getPayloadClass(record.value()) : null);
-        client.getProducer(kafkaConfig.getProducer().getProperties()).send(record);
+    public KafkaEventProducer(KafkaProducerProperties config) {
+        this.producer = new KafkaProducer<>(config.getProducer());
     }
 
-    private String getPayloadClass(Object event) {
-        try {
-            Object payload = event.getClass().getMethod("getPayload").invoke(event);
-            return payload != null ? payload.getClass().getSimpleName() : null;
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            return null;
-        }
+    public void send(SpecificRecordBase event, String topic, String hubId, Instant timestamp) {
+        ProducerRecord<String, SpecificRecordBase> record =
+                new ProducerRecord<>(topic, null, timestamp.toEpochMilli(), hubId, event);
+        log.info("Сохраняю событие {}, связанное с хабом {}, в топик {}", event, hubId, topic);
+        producer.send(record);
     }
-
-
 }
