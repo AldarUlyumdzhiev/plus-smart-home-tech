@@ -1,22 +1,29 @@
+server:
+  port: ${ANALYZER_PORT:59091}
+
 spring:
   application:
     name: analyzer
   config:
-    import: "configserver:"
+    import: "optional:configserver:"
   cloud:
     config:
+      enabled: ${CONFIG_ENABLED:false}
       discovery:
-        enabled: true
+        enabled: ${CONFIG_DISCOVERY:false}
         serviceId: config-server
-      fail-fast: true
+      fail-fast: ${CONFIG_FAIL_FAST:false}
       retry:
         useRandomPolicy: true
         max-interval: 6000
 
 eureka:
   client:
+    enabled: ${EUREKA_ENABLED:false}
+    register-with-eureka: ${EUREKA_REGISTER:false}
+    fetch-registry: ${EUREKA_FETCH:false}
     serviceUrl:
-      defaultZone: http://${eureka.instance.hostname:localhost}:${eureka.instance.port:8761}/eureka/
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://${eureka.instance.hostname:localhost}:${eureka.instance.port:8761}/eureka/}
 
 logging:
   level:
