@@ -1,10 +1,3 @@
-DROP TABLE IF EXISTS scenario_actions;
-DROP TABLE IF EXISTS scenario_conditions;
-DROP TABLE IF EXISTS actions;
-DROP TABLE IF EXISTS conditions;
-DROP TABLE IF EXISTS sensors;
-DROP TABLE IF EXISTS scenarios;
-
 -- создаём таблицу scenarios
 CREATE TABLE IF NOT EXISTS scenarios (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -20,13 +13,11 @@ CREATE TABLE IF NOT EXISTS sensors (
 );
 
 -- создаём таблицу conditions
--- в связи с тем, что value в avro бывает двух типов, разделил варианты на два поля
 CREATE TABLE IF NOT EXISTS conditions (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     type VARCHAR,
     operation VARCHAR,
-    value_int INTEGER,
-    value_bool BOOLEAN
+    value INTEGER
 );
 
 -- создаём таблицу actions
@@ -38,17 +29,17 @@ CREATE TABLE IF NOT EXISTS actions (
 
 -- создаём таблицу scenario_conditions, связывающую сценарий, датчик и условие активации сценария
 CREATE TABLE IF NOT EXISTS scenario_conditions (
-    scenario_id BIGINT REFERENCES scenarios(id),
-    sensor_id VARCHAR REFERENCES sensors(id),
-    condition_id BIGINT REFERENCES conditions(id),
+    scenario_id BIGINT REFERENCES scenarios(id) ON DELETE CASCADE,
+    sensor_id VARCHAR REFERENCES sensors(id) ON DELETE CASCADE,
+    condition_id BIGINT REFERENCES conditions(id) ON DELETE CASCADE,
     PRIMARY KEY (scenario_id, sensor_id, condition_id)
 );
 
 -- создаём таблицу scenario_actions, связывающую сценарий, датчик и действие, которое нужно выполнить при активации сценария
 CREATE TABLE IF NOT EXISTS scenario_actions (
-    scenario_id BIGINT REFERENCES scenarios(id),
-    sensor_id VARCHAR REFERENCES sensors(id),
-    action_id BIGINT REFERENCES actions(id),
+    scenario_id BIGINT REFERENCES scenarios(id) ON DELETE CASCADE,
+    sensor_id VARCHAR REFERENCES sensors(id) ON DELETE CASCADE,
+    action_id BIGINT REFERENCES actions(id) ON DELETE CASCADE,
     PRIMARY KEY (scenario_id, sensor_id, action_id)
 );
 
