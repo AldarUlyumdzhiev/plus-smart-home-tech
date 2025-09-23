@@ -8,13 +8,13 @@ option java_package = "ru.yandex.practicum.grpc.telemetry.event";
 import "google/protobuf/timestamp.proto";
 
 message HubEventProto {
-  string hub_id = 1; // идентификатор хаба
-  google.protobuf.Timestamp timestamp = 2; // таймстемп события
+  string hub_id = 1;                                  // идентификатор хаба
+  google.protobuf.Timestamp timestamp = 2;            // таймстемп события
   oneof payload {// содержимое конкретного события
-    DeviceAddedEventProto device_added = 3;      // данные события добавления устройства
-    DeviceRemovedEventProto device_removed = 4;  // данные события удаления устройства
-    ScenarioAddedEventProto scenario_added = 5;      // данные события добавления нового сценария
-    ScenarioRemovedEventProto scenario_removed = 6;  // данные события удаления сценария
+    DeviceAddedEventProto device_added = 3;           // данные события добавления устройства
+    DeviceRemovedEventProto device_removed = 4;       // данные события удаления устройства
+    ScenarioAddedEventProto scenario_added = 5;       // данные события добавления нового сценария
+    ScenarioRemovedEventProto scenario_removed = 6;   // данные события удаления сценария
   }
 }
 
@@ -28,7 +28,7 @@ enum DeviceTypeProto {
 }
 
 message DeviceAddedEventProto {
-  string id = 1;        // идентификатор устройства
+  string id = 1;            // идентификатор устройства
   DeviceTypeProto type = 2; // тип устройства
 }
 
@@ -76,9 +76,9 @@ message DeviceActionProto {
 }
 
 message ScenarioAddedEventProto {
-  string name = 1; // название сценария, уникальное в рамках хаба
+  string name = 1;                               // название сценария, уникальное в рамках хаба
   repeated ScenarioConditionProto condition = 2; // набор условий активации сценария
-  repeated DeviceActionProto action = 3; // набор действий при активации сценария
+  repeated DeviceActionProto action = 3;         // набор действий при активации сценария
 }
 
 message ScenarioRemovedEventProto {

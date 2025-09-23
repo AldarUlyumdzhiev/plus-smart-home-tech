@@ -4,8 +4,8 @@ services:
     hostname: kafka
     container_name: kafka
     ports:
-      - "9092:9092"
-      - "9101:9101"
+      - "9092:9092" # for client connections
+      - "9101:9101" # JMX
     restart: unless-stopped
     environment:
       KAFKA_NODE_ID: 1
@@ -34,61 +34,18 @@ services:
                              --bootstrap-server kafka:29092'"
     init: true
 
-  schema-registry:
-    image: confluentinc/cp-schema-registry:7.4.3
-    container_name: schema-registry
-    depends_on:
-      - kafka
-    ports:
-      - "8081:8081"
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
-
-  shopping-store-db:
+  db:
     image: postgres:16.1
-    container_name: shopping-store-db
+    hostname: postgres
+    container_name: postgres
     ports:
-      - "7432:5432"
+      - "6541:5432"
     environment:
-      POSTGRES_DB: shopping_store_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
-  shopping-cart-db:
-    image: postgres:16.1
-    container_name: shopping-cart-db
-    ports:
-      - "8432:5432"
-    environment:
-      POSTGRES_DB: shopping_cart_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
-  warehouse-db:
-    image: postgres:16.1
-    container_name: warehouse-db
-    ports:
-      - "9432:5432"
-    environment:
-      POSTGRES_DB: warehouse_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
-
-#  telemetry-postgres:
-#    image: postgres:15
-#    container_name: telemetry-postgres
-#    restart: always
-#    environment:
-#      POSTGRES_DB: telemetry_analyzer
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: shareit
-#    ports:
-#      - "5432:5432"
-#    volumes:
-#      - telemetry_pgdata:/var/lib/postgresql/data
-
-#volumes:
-#  telemetry_pgdata:
+      - POSTGRES_PASSWORD=plusSmartHomeTech
+      - POSTGRES_USER=plusSmartHomeTech
+      - POSTGRES_DB=plusSmartHomeTech
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
