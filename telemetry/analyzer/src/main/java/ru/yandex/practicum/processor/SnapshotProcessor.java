@@ -2,87 +2,75 @@ package ru.yandex.practicum.processor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.configuration.SnapshotConsumerConfig;
-import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
-import ru.yandex.practicum.kafka.client.KafkaClient;
+import ru.yandex.practicum.AnalyzerConfig;
+import ru.yandex.practicum.handler.SnapshotHandler;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-import ru.yandex.practicum.service.HubRouterGrpcProducer;
-import ru.yandex.practicum.service.SnapshotHandler;
 
-import java.time.Duration;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
-public class SnapshotProcessor implements Runnable {
-
-    private final KafkaClient client;
-    private final SnapshotConsumerConfig consumerConfig;
+@RequiredArgsConstructor
+public class SnapshotProcessor {
+    private static final int COUNT_COMMIT_OFFSETS = 10;
+    private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
+    private final KafkaConsumer<String, SensorsSnapshotAvro> consumer;
     private final SnapshotHandler handler;
-    private final HubRouterGrpcProducer hubRouterGrpcProducer;
+    private final AnalyzerConfig config;
 
-    private final Consumer<String, SpecificRecordBase> consumer;
-
-    private volatile boolean running = true;
-
-    public SnapshotProcessor(KafkaClient client,
-                             SnapshotConsumerConfig consumerConfig,
-                             SnapshotHandler handler,
-                             HubRouterGrpcProducer hubRouterGrpcProducer) {
-        this.client = client;
-        this.consumerConfig = consumerConfig;
-        this.handler = handler;
-        this.hubRouterGrpcProducer = hubRouterGrpcProducer;
-
-        this.consumer = client.getConsumer(consumerConfig.getSnapshotConsumerProperties().getProperties());
-        this.consumer.subscribe(consumerConfig.getSnapshotConsumerProperties().getTopics().values().stream().toList());
-
-        log.info("SnapshotProcessor: Subscribed to topic: {}", consumer.subscription());
-    }
-
-    @Override
-    public void run() {
+    public void start() {
         try {
-            while (running) {
-                var records = consumer.poll(Duration.ofMillis(1000));
-                if (!records.isEmpty()) {
-                    log.info("SnapshotProcessor: records {}", records);
-                    for (ConsumerRecord<String, SpecificRecordBase> record : records) {
-                        SensorsSnapshotAvro snapshot = (SensorsSnapshotAvro) record.value();
-                        List<DeviceActionRequest> messageList = handler.process(snapshot);
-                        if (!messageList.isEmpty()) {
-                            log.info("Send {}", messageList);
-                            sendToGrpc(messageList);
-                        }
-                    }
+            consumer.subscribe(config.getSnapshotTopics());
+
+            while (true) {
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer
+                        .poll(config.getSnapshotConsumeAttemptTimeout());
+                int count = 0;
+                for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
+                    SensorsSnapshotAvro sensorsSnapshotAvro = record.value();
+                    log.info("Received snapshot from hub ID = {}", sensorsSnapshotAvro.getHubId());
+                    handler.handle(sensorsSnapshotAvro);
+                    manageOffsets(record,count, consumer);
+                    count++;
                 }
+                consumer.commitAsync();
             }
-        } catch (WakeupException e) {
-            if (running) {
-                log.error("WakeupException in SnapshotProcessor", e);
-            }
+        } catch (WakeupException ignored) {
+
         } catch (Exception e) {
-            log.error("Unexpected error in SnapshotProcessor", e);
+            log.error("Error:", e);
         } finally {
-            consumer.close();
+            try {
+                consumer.commitSync(currentOffsets);
+            } finally {
+                consumer.close();
+                log.info("Consumer closed");
+            }
         }
     }
 
-    public void shutdown() {
-        running = false;
+    public void stop() {
         consumer.wakeup();
     }
 
-    private void sendToGrpc(List<DeviceActionRequest> requests) {
-        for (DeviceActionRequest request : requests) {
-            hubRouterGrpcProducer.sendRequest(request);
+    private static void manageOffsets(ConsumerRecord<String, SensorsSnapshotAvro> record, int count,
+                                      KafkaConsumer<String, SensorsSnapshotAvro> consumer) {
+        currentOffsets.put(
+                new TopicPartition(record.topic(), record.partition()),
+                new OffsetAndMetadata(record.offset() + 1)
+        );
+
+        if (count % COUNT_COMMIT_OFFSETS == 0) {
+            consumer.commitAsync(currentOffsets, (offsets, exception) -> {
+                if (exception != null) {
+                    log.warn("Error commiting offsets: {}", offsets, exception);
+                }
+            });
         }
     }
 }

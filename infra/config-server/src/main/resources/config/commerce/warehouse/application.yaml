@@ -1,23 +1,20 @@
+server:
+  port: 0
+
 spring:
   application:
     name: warehouse
-  sql:
-    init:
-      mode: always
   jpa:
     hibernate:
       ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6543/commerce
-    username: main
-    password: main
-
-logging:
-  level:
-    ru.yandex.practicum.commerce.store: TRACE
-    org:
-      springframework: ERROR
-
-server:
-  port: 0
+    url: jdbc:postgresql://localhost:5432/smart
+    username: user
+    password: pass
