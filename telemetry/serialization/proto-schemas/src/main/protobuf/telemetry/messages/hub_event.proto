@@ -3,6 +3,7 @@ syntax = "proto3";
 package telemetry.message.event;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
@@ -11,13 +12,12 @@ message HubEventProto {
   string hub_id = 1;
   google.protobuf.Timestamp timestamp = 2;
   oneof payload {
-    DeviceAddedEventProto device_added = 3;
-    DeviceRemovedEventProto device_removed = 4;
-    ScenarioAddedEventProto scenario_added = 5;
-    ScenarioRemovedEventProto scenario_removed = 6;
+    DeviceAddedEventProto device_added_event = 3;
+    DeviceRemovedEventProto device_removed_event = 4;
+    ScenarioAddedEventProto scenario_added_event = 5;
+    ScenarioRemovedEventProto scenario_removed_event = 6;
   }
 }
-
 
 enum DeviceTypeProto {
   MOTION_SENSOR = 0;
@@ -35,7 +35,6 @@ message DeviceAddedEventProto {
 message DeviceRemovedEventProto {
   string id = 1;
 }
-
 
 enum ConditionTypeProto {
   MOTION = 0;
@@ -57,8 +56,8 @@ message ScenarioConditionProto {
   ConditionTypeProto type = 2;
   ConditionOperationProto operation = 3;
   oneof value {
-    bool bool_value = 4;
     int32 int_value = 5;
+    google.protobuf.NullValue null = 6;
   }
 }
 
@@ -84,7 +83,6 @@ message ScenarioAddedEventProto {
 message ScenarioRemovedEventProto {
   string name = 1;
 }
-
 
 message DeviceActionRequest {
   string hub_id = 1;
