@@ -1,3 +1,6 @@
+server:
+  port: 0
+
 spring:
   application:
     name: shopping-cart
@@ -5,18 +8,15 @@ spring:
     import: "configserver:"
   cloud:
     config:
+      discovery:
+        enabled: true
+        serviceId: config-server
       fail-fast: true
       retry:
         useRandomPolicy: true
         max-interval: 6000
-      discovery:
-        enabled: true
-        serviceId: config-server
+
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-  instance:
-    preferIpAddress: false
-    hostname: localhost
-    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}

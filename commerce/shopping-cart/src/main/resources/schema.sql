@@ -1,12 +1,15 @@
-CREATE TABLE IF NOT EXISTS shopping_carts (
-shopping_cart_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-user_name VARCHAR(50) UNIQUE NOT NULL,
-state VARCHAR(50) NOT NULL
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS carts (
+    id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    state VARCHAR(50) NOT NULL,
+    owner VARCHAR(255) NOT NULL,
+    created TIMESTAMP NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS products (
-product_id UUID,
-quantity BIGINT,
-shopping_cart_id UUID REFERENCES shopping_carts(shopping_cart_id) ON DELETE CASCADE,
-PRIMARY KEY (product_id, shopping_cart_id)
+CREATE TABLE IF NOT EXISTS cart_products (
+    shopping_cart_id UUID references carts(id),
+    product_id UUID NOT NULL,
+    quantity BIGINT NOT NULL,
+    PRIMARY KEY (shopping_cart_id, product_id)
 );
