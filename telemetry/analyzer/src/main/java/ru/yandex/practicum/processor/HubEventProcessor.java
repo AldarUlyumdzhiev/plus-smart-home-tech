@@ -2,55 +2,68 @@ package ru.yandex.practicum.processor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.kafka.client.KafkaClient;
-import ru.yandex.practicum.configuration.HubsConsumerConfig;
+import ru.yandex.practicum.AnalyzerConfig;
+import ru.yandex.practicum.handlers.HubEventHandler;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.service.HubHandler;
 
-import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
-@Slf4j
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class HubEventProcessor implements Runnable {
-    private final KafkaClient client;
-    private final HubsConsumerConfig consumerConfig;
-    private final HubHandler handler;
-    protected KafkaConsumer<String, SpecificRecordBase> consumer;
+
+    private static final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
+
+    private final KafkaConsumer<String, HubEventAvro> consumer;
+    private final HubEventHandler handler;
+    private final AnalyzerConfig config;
 
 
     @Override
     public void run() {
-        consumer = client.getKafkaConsumer(consumerConfig.getHubsConsumerProperties().getProperties());
-        consumer.subscribe(consumerConfig.getHubsConsumerProperties().getTopics().values().stream().toList());
-        log.info("HubEventProcessor: Subscribed to topic: {}", consumer.subscription());
         try {
+            consumer.subscribe(config.getHubTopics());
+
             while (true) {
-                ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(5000));
-                if (!records.isEmpty()) {
-                    log.info("\nHubEventProcessor: accepted " + records);
-                    for (ConsumerRecord<String, SpecificRecordBase> record : records) {
-                        HubEventAvro event = (HubEventAvro) record.value();
-                        handler.habEventHandle(event);
-                    }
+                ConsumerRecords<String, HubEventAvro> records = consumer.poll(config.getHubConsumeAttemptTimeout());
+                for (ConsumerRecord<String, HubEventAvro> record : records) {
+                    HubEventAvro hubEventAvro = record.value();
+                    log.info("Received hubEvent from hub ID = {}", hubEventAvro.getHubId());
+                    handler.handle(hubEventAvro);
+                    manageOffsets(record, consumer);
                 }
+                consumer.commitAsync();
             }
-        } catch (WakeupException e) {
-            log.info("Consumer wakeup called, shutting down");
+        } catch (WakeupException ignored) {
+
         } catch (Exception e) {
-            log.error("Unexpected error in HubEventProcessor", e);
+            log.error("Error:", e);
         } finally {
-            consumer.close();
+            try {
+                consumer.commitSync(currentOffsets);
+            } finally {
+                consumer.close();
+                log.info("Consumer close");
+            }
         }
     }
 
-    public void start() {
+    public void stop() {
+        consumer.wakeup();
+    }
+
+    private static void manageOffsets(ConsumerRecord<String, HubEventAvro> record,
+                                      KafkaConsumer<String, HubEventAvro> consumer) {
+        currentOffsets.put(
+                new TopicPartition(record.topic(), record.partition()),
+                new OffsetAndMetadata(record.offset() + 1)
+        );
     }
 
 }

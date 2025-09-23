@@ -17,7 +17,7 @@
         <module>collector</module>
         <module>aggregator</module>
         <module>analyzer</module>
-        <module>hub-router</module>
+        <module>hubRouter</module>
     </modules>
 
 </project>

@@ -2,17 +2,16 @@ spring:
   application:
     name: analyzer
   config:
-    import: "configserver: "
+    import: "configserver:"
   cloud:
     config:
       discovery:
         enabled: true
         serviceId: config-server
-      fail-fast: true
-      retry:
-        useRandomPolicy: true
-        max-interval: 6000
-
+    fail-fast: true
+    retry:
+      useRandomPolicy: true
+      max-interval: 6000
 eureka:
   client:
     serviceUrl:

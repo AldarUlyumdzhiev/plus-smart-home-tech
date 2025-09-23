@@ -1,9 +1,10 @@
-CREATE TABLE IF NOT EXISTS warehouse_products (
-    id UUID PRIMARY KEY,
+-- создаём таблицу products
+CREATE TABLE IF NOT EXISTS products (
+    id VARCHAR PRIMARY KEY,
+    weight FLOAT,
+    width FLOAT,
+    height FLOAT,
+    depth FLOAT,
     fragile BOOLEAN,
-    width DECIMAL NOT NULL,
-    height DECIMAL NOT NULL,
-    depth DECIMAL NOT NULL,
-    weight DECIMAL NOT NULL,
-    quantity BIGINT NOT NULL
+    quantity INT
 );
