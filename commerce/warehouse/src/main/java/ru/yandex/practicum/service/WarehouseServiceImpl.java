@@ -1,62 +1,45 @@
 package ru.yandex.practicum.service;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.address.AddressManager;
-import ru.yandex.practicum.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.dto.warehouse.AddProductToWarehouseRequest;
-import ru.yandex.practicum.dto.warehouse.AddressDto;
-import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
-import ru.yandex.practicum.exception.NoSpecifiedProductInWarehouseException;
-import ru.yandex.practicum.exception.ProductInShoppingCartLowQuantityInWarehouse;
-import ru.yandex.practicum.exception.SpecifiedProductAlreadyInWarehouseException;
+import ru.yandex.practicum.dto.*;
+import ru.yandex.practicum.exeption.NoSpecifiedProductInWarehouseException;
+import ru.yandex.practicum.exeption.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exeption.SpecifiedProductAlreadyInWarehouseException;
 import ru.yandex.practicum.mapper.WarehouseMapper;
-import ru.yandex.practicum.model.Dimension;
 import ru.yandex.practicum.model.WarehouseProduct;
 import ru.yandex.practicum.repository.WarehouseRepository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Transactional(readOnly = true)
 public class WarehouseServiceImpl implements WarehouseService {
-    final WarehouseRepository warehouseRepository;
-    final WarehouseMapper warehouseMapper;
+
+    private final WarehouseRepository warehouseRepository;
+    private final WarehouseMapper warehouseMapper;
 
     @Override
     @Transactional
-    public void newProductInWarehouse(NewProductInWarehouseRequest request) {
-        if (warehouseRepository.existsById(request.getProductId())) {
-            throw new SpecifiedProductAlreadyInWarehouseException(
-                    "Товар уже добавлен на склад с id = " + request.getProductId());
-        }
-        warehouseRepository.save(warehouseMapper.toEntity(request));
+    public void createProductInWarehouse(NewProductInWarehouseRequest newProduct) {
+        Optional<WarehouseProduct> product = warehouseRepository.findById(newProduct.getProductId());
+        if (product.isPresent())
+            throw new SpecifiedProductAlreadyInWarehouseException("Невозможно добавить товар, который уже есть в базе данных");
+        warehouseRepository.save(warehouseMapper.toWarehouse(newProduct));
     }
 
-    @Override
     @Transactional
-    public void addProductToWarehouse(AddProductToWarehouseRequest request) {
-        WarehouseProduct product = findProductById(request.getProductId());
-        product.setQuantity(product.getQuantity() + request.getQuantity());
-        warehouseRepository.save(product);
-    }
-
     @Override
-    @Transactional(readOnly = true)
-    public BookedProductsDto checkProductQuantity(ShoppingCartDto shoppingCart) {
+    public BookedProductsDto checkShoppingCart(ShoppingCartDto shoppingCartDto) {
         boolean hasFragile = false;
         double totalVolume = 0;
         double totalWeight = 0;
 
-        for (Map.Entry<UUID, Long> entry : shoppingCart.getProducts().entrySet()) {
+        for (Map.Entry<UUID, Long> entry : shoppingCartDto.getProducts().entrySet()) {
             UUID productId = entry.getKey();
             Long requestedQuantity = entry.getValue();
             WarehouseProduct product = findProductById(productId);
@@ -67,7 +50,9 @@ public class WarehouseServiceImpl implements WarehouseService {
             if (product.isFragile()) {
                 hasFragile = true;
             }
-            double productVolume = calculateVolume(product.getDimension());
+            double productVolume = product.getDimension().getWidth()
+                    * product.getDimension().getHeight()
+                    * product.getDimension().getDepth();
             totalVolume += productVolume * requestedQuantity;
             totalWeight += product.getWeight() * requestedQuantity;
         }
@@ -79,20 +64,23 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
+    @Transactional
     @Override
-    public AddressDto getWarehouseAddress() {
-        String address = AddressManager.CURRENT_ADDRESS;
-        return AddressDto.builder()
-                .country(address)
-                .city(address)
-                .street(address)
-                .house(address)
-                .flat(address)
-                .build();
+    public void addProductToWarehouse(AddProductToWarehouseRequest request) {
+        WarehouseProduct product = findProductById(request.getProductId());
+        product.setQuantity(product.getQuantity() + request.getQuantity());
+        warehouseRepository.save(product);
     }
 
-    private double calculateVolume(Dimension dimension) {
-        return dimension.getWidth() * dimension.getHeight() * dimension.getDepth();
+    @Override
+    public AddressDto getAddress() {
+        return AddressDto.builder()
+                .country("Россия")
+                .city("Москва")
+                .street("Ленинградский проспект")
+                .house("10")
+                .flat("1")
+                .build();
     }
 
     private WarehouseProduct findProductById(UUID productId) {

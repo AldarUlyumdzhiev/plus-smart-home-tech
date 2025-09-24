@@ -1,103 +1,92 @@
 package ru.yandex.practicum.service;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.store.ListProductsResponse;
-import ru.yandex.practicum.dto.store.ProductDto;
-import ru.yandex.practicum.dto.store.SetProductQuantityStateRequest;
-import ru.yandex.practicum.dto.store.SortField;
-import ru.yandex.practicum.dto.store.enums.ProductCategory;
-import ru.yandex.practicum.dto.store.enums.ProductState;
-import ru.yandex.practicum.exception.NotFoundException;
+import ru.yandex.practicum.dto.PageableDto;
+import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
+import ru.yandex.practicum.exeption.ProductNotFoundException;
 import ru.yandex.practicum.mapper.StoreMapper;
 import ru.yandex.practicum.model.Product;
 import ru.yandex.practicum.repository.StoreRepository;
+import ru.yandex.practicum.type.ProductCategory;
+import ru.yandex.practicum.type.ProductState;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class StoreServiceImpl implements StoreService {
-    final StoreRepository storeRepository;
-    final StoreMapper storeMapper;
+@Transactional(readOnly = true)
+public class StoreServiceImpl implements StoreService{
+
+    private final StoreRepository storeRepository;
+    private final StoreMapper mapper;
 
     @Override
-    public ListProductsResponse getProductsByCategory(ProductCategory category, Pageable pageable) {
-        log.info("Получение списка товаров по категории = {}", category);
-        List<ProductDto> products = storeRepository.findAllByProductCategoryAndProductState(category,
-                        ProductState.ACTIVE, pageable).stream()
-                .map(storeMapper::toDto)
-                .toList();
-        List<SortField> sortFields = pageable.getSort().stream()
-                .map(s -> new SortField(s.getProperty(), s.getDirection().name()))
-                .toList();
-        return ListProductsResponse.builder().content(products).sort(sortFields).build();
+    public Page<ProductDto> getProductsByCategory(ProductCategory category, PageableDto pageable) {
+        Pageable pageRequest = PageRequest.of(
+                pageable.getPage(),
+                pageable.getSize(),
+                Sort.by(Sort.Direction.ASC, pageable.getSort().toArray(new String[0]))
+        );
+
+        Page<Product> page = storeRepository.findAllByProductCategory(category, pageRequest);
+
+        return page.map(mapper::toProductDto);
     }
 
-    @Override
     @Transactional
+    @Override
     public ProductDto createProduct(ProductDto productDto) {
-        log.info("Создание товара с именем = {}", productDto.getProductName());
-        Product product = storeMapper.toEntity(productDto);
+        Product product = mapper.toProduct(productDto);
         product.setProductState(ProductState.ACTIVE);
-        return storeMapper.toDto(storeRepository.save(product));
+        return mapper.toProductDto(storeRepository.save(product));
     }
 
-    @Override
     @Transactional
+    @Override
     public ProductDto updateProduct(ProductDto productDto) {
-        findProductById(productDto.getProductId());
-        log.info("Обновление товара с именем = {}", productDto.getProductName());
-        return storeMapper.toDto(storeRepository.save(storeMapper.toEntity(productDto)));
+        getProductById(productDto.getProductId());
+            return mapper.toProductDto(storeRepository.save(mapper.toProduct(productDto)));
     }
 
-    @Override
     @Transactional
-    public Boolean removeProduct(UUID productId) {
-        Product product = findProductById(productId);
-        if (product.getProductState().equals(ProductState.DEACTIVATE)) {
-            log.error("Ошибка удаления товара с именем = {}, т.к. товар уже удален", product.getProductName());
-            return false;
-        }
+    @Override
+    public boolean removeProductFromStore(UUID productId) {
+        Product product = getProductById(productId);
         product.setProductState(ProductState.DEACTIVATE);
         storeRepository.save(product);
-        log.info("Товар с именем = {} успешно удален", product.getProductName());
-        return true;
+        return false;
     }
 
-    @Override
     @Transactional
-    public Boolean setQuantityState(SetProductQuantityStateRequest request) {
-        Product product = findProductById(request.getProductId());
+    @Override
+    public boolean updateProductQuantityState(SetProductQuantityStateRequest request) {
+        Product product = getProductById(request.getProductId());
         if (product.getQuantityState().equals(request.getQuantityState())) {
-            log.error("Ошибка изменения количества товара с именем = {}, оно не изменилось", product.getProductName());
             return false;
         }
-        log.info("Изменение количества товара с именем = {} на указанное значение = {}", product.getProductName(),
-                request.getQuantityState());
         product.setQuantityState(request.getQuantityState());
         storeRepository.save(product);
-        log.info("Количество товара с именем = {} успешно изменено", product.getProductName());
         return true;
     }
 
     @Override
-    public ProductDto getProductById(UUID productId) {
-        log.info("Получение товара с id = {}", productId);
-        return storeMapper.toDto(findProductById(productId));
+    public ProductDto getInfoProductById(UUID productId) {
+        Product product = getProductById(productId);
+        return mapper.toProductDto(product);
     }
 
-    private Product findProductById(UUID productId) {
-        log.info("Поиск товара с id = {}", productId);
-        return storeRepository.findById(productId)
-                .orElseThrow(() -> new NotFoundException("Товар с id = " + productId + " не найден"));
+    private Product getProductById(UUID productId) {
+        Optional<Product> product = Optional.ofNullable(storeRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Товар с таким productId не найден")));
+        return product.get();
     }
+
 }

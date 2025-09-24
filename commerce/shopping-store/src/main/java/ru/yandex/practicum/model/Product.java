@@ -3,9 +3,9 @@ package ru.yandex.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.yandex.practicum.dto.store.enums.ProductCategory;
-import ru.yandex.practicum.dto.store.enums.ProductState;
-import ru.yandex.practicum.dto.store.enums.QuantityState;
+import ru.yandex.practicum.type.ProductCategory;
+import ru.yandex.practicum.type.ProductState;
+import ru.yandex.practicum.type.QuantityState;
 
 import java.util.UUID;
 

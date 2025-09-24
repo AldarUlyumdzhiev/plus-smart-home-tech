@@ -1,29 +1,13 @@
 spring:
-  application:
-    name: shopping-store
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6554/store
+    url: jdbc:postgresql://localhost:5435/shopping_store
     username: store
-    password: store
+    password: store123
+    driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
     show-sql: true
-
-server:
-  port: 0
-
-logging:
-  level:
-    root: INFO
-    org:
-      zalando:
-        logbook: TRACE
-    org.springframework.web: INFO
-    org.hibernate.SQL: WARN
-    your.application.package: DEBUG
+    properties:
+      hibernate.format_sql: true

@@ -23,7 +23,7 @@ public class WarehouseProduct {
     boolean fragile;
 
     @Embedded
-    Dimension dimension;
+    Size dimension;
 
     @Column(name = "weight", nullable = false)
     Double weight;

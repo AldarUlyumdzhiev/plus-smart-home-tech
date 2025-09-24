@@ -1,43 +1,45 @@
 package ru.yandex.practicum.controller;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.dto.warehouse.AddProductToWarehouseRequest;
-import ru.yandex.practicum.dto.warehouse.AddressDto;
-import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
-import ru.yandex.practicum.feign.WarehouseClient;
+import ru.yandex.practicum.dto.*;
 import ru.yandex.practicum.service.WarehouseService;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/warehouse")
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class WarehouseController implements WarehouseClient {
-    final WarehouseService warehouseService;
+@Slf4j
+public class WarehouseController {
 
-    @Override
-    public void newProductInWarehouse(NewProductInWarehouseRequest request) {
-        warehouseService.newProductInWarehouse(request);
+    private final WarehouseService warehouseService;
+
+
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping
+    public void createProductInWarehouse(@RequestBody NewProductInWarehouseRequest request) {
+        warehouseService.createProductInWarehouse(request);
     }
 
-    @Override
-    public BookedProductsDto checkProductQuantity(ShoppingCartDto shoppingCart) {
-        return warehouseService.checkProductQuantity(shoppingCart);
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/check",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public BookedProductsDto checkShoppingCart(@RequestBody ShoppingCartDto shoppingCartDto) {
+        return warehouseService.checkShoppingCart(shoppingCartDto);
     }
 
-    @Override
-    public void addProductToWarehouse(AddProductToWarehouseRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/add")
+    public void addProductToWarehouse(@RequestBody AddProductToWarehouseRequest request) {
         warehouseService.addProductToWarehouse(request);
     }
 
-    @Override
-    public AddressDto getWarehouseAddress() {
-        return warehouseService.getWarehouseAddress();
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/address")
+    public AddressDto getAddress() {
+        return warehouseService.getAddress();
     }
 }

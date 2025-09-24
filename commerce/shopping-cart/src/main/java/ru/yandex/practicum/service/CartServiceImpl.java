@@ -1,111 +1,101 @@
 package ru.yandex.practicum.service;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.dto.cart.ChangeProductQuantityRequest;
-import ru.yandex.practicum.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.exception.NoProductsInShoppingCartException;
-import ru.yandex.practicum.exception.NotAuthorizedUserException;
+import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
+import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.exeption.NoProductsInShoppingCartException;
+import ru.yandex.practicum.exeption.NotAuthorizedUserException;
 import ru.yandex.practicum.mapper.CartMapper;
 import ru.yandex.practicum.model.ShoppingCart;
 import ru.yandex.practicum.repository.CartRepository;
+import ru.yandex.practicum.warehouse.WarehouseClient;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-@Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartServiceImpl implements CartService {
-    final CartRepository cartRepository;
-    final CartMapper cartMapper;
+
+    private final CartRepository cartRepository;
+    private final CartMapper mapper;
+    private final WarehouseClient warehouseClient;
 
     @Override
     @Transactional(readOnly = true)
-    public ShoppingCartDto getCart(String username) {
-        checkUser(username);
+    public ShoppingCartDto getShoppingCart(String username) {
+        checkUserPresence(username);
         return cartRepository.findByUsername(username)
-                .map(cartMapper::toDto)
+                .map(mapper::toShoppingCartDto)
                 .orElseGet(() -> createNewCartDto(username));
     }
 
-    @Override
     @Transactional
-    public ShoppingCartDto addProductToCart(String username, Map<UUID, Long> products) {
-        checkUser(username);
-        Optional<ShoppingCart> cartOpt = cartRepository.findByUsername(username);
-        ShoppingCart cart;
-        if (cartOpt.isPresent()) {
-            cart = cartOpt.get();
-            products.forEach((productId, quantity) ->
-                    cart.getProducts().merge(productId, quantity, Long::sum));
+    @Override
+    public ShoppingCartDto addToShoppingCart(String username, Map<UUID, Long> products) {
+        checkUserPresence(username);
+
+        Optional<ShoppingCart> shoppingCartOpt = cartRepository.findByUsername(username);
+        ShoppingCart shoppingCart;
+
+        if (shoppingCartOpt.isPresent()) {
+            shoppingCart = shoppingCartOpt.get();
+            products.forEach((productId, quantity) -> shoppingCart.getProducts().merge(productId, quantity, Long::sum));
+
         } else {
-            cart = ShoppingCart.builder().username(username).products(products).isActive(true).build();
+            shoppingCart = ShoppingCart.builder().username(username).products(products).isActive(true).build();
         }
-        return cartMapper.toDto(cartRepository.save(cart));
+
+        warehouseClient.checkShoppingCart(mapper.toShoppingCartDto(shoppingCart));
+        return mapper.toShoppingCartDto(cartRepository.save(shoppingCart));
     }
 
-    @Override
     @Transactional
+    @Override
     public void deleteUserCart(String username) {
-        checkUser(username);
+        checkUserPresence(username);
         cartRepository.findByUsername(username)
-                .ifPresent(cart -> {
-                    cart.setIsActive(false);
-                    cartRepository.save(cart);
+                .ifPresent(shoppingCart -> {
+                    shoppingCart.setIsActive(false);
+                    cartRepository.save(shoppingCart);
                 });
     }
 
-    @Override
     @Transactional
-    public ShoppingCartDto removeFromCart(String username, Set<UUID> productIds) {
-        checkUser(username);
+    @Override
+    public ShoppingCartDto changeCart(String username, List<UUID> items) {
+        checkUserPresence(username);
         ShoppingCart cart = findCart(username);
-        for (UUID productId : productIds) {
+        for (UUID productId : items) {
             if (!cart.getProducts().containsKey(productId)) {
                 throw new NoProductsInShoppingCartException("Товар = " + productId + " не найден в корзине");
             }
             cart.getProducts().remove(productId);
         }
-        return cartMapper.toDto(cartRepository.save(cart));
+        return mapper.toShoppingCartDto(cartRepository.save(cart));
     }
 
-    @Override
     @Transactional
-    public ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest request) {
-        checkUser(username);
+    @Override
+    public ShoppingCartDto changeCountProductInCart(String username, ChangeProductQuantityRequest request) {
+        checkUserPresence(username);
         ShoppingCart cart = findCart(username);
-        if (!cart.getProducts().containsKey(request.getProductId())) {
-            throw new NoProductsInShoppingCartException("Товар = " + request.getProductId() + " не найден в корзине");
-        }
-        cart.getProducts().put(request.getProductId(), request.getNewQuantity());
-        return cartMapper.toDto(cartRepository.save(cart));
-    }
+        if (cart == null || !cart.getProducts().containsKey(request.getProductId()))
+            throw new NoProductsInShoppingCartException("Отсутствует корзина у пользователя " + username);
 
-    private void checkUser(String username) {
-        if (username == null || username.isBlank()) {
-            throw new NotAuthorizedUserException("Имя пользователя не должно быть пустым или null");
-        }
+        cart.getProducts().put(request.getProductId(), request.getNewQuantity());
+        return mapper.toShoppingCartDto(cartRepository.save(cart));
     }
 
     private ShoppingCartDto createNewCartDto(String username) {
-        ShoppingCart newCart = createNewCart(username);
-        return cartMapper.toDto(newCart);
-    }
-
-    private ShoppingCart createNewCart(String username) {
         ShoppingCart newCart = ShoppingCart.builder()
                 .username(username)
                 .isActive(true)
                 .build();
-        return cartRepository.save(newCart);
+        cartRepository.save(newCart);
+        return mapper.toShoppingCartDto(newCart);
     }
 
     private ShoppingCart findCart(String username) {
@@ -113,4 +103,10 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new NoProductsInShoppingCartException("Корзина не найдена для пользователя = " +
                         username));
     }
+
+    private void checkUserPresence(String username) {
+        if (username == null || username.isEmpty())
+            throw new NotAuthorizedUserException("Отсутствует пользователь");
+    }
 }
+

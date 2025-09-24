@@ -1,62 +1,59 @@
 package ru.yandex.practicum.controller;
 
-import lombok.AccessLevel;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.dto.store.ListProductsResponse;
-import ru.yandex.practicum.dto.store.ProductDto;
-import ru.yandex.practicum.dto.store.SetProductQuantityStateRequest;
-import ru.yandex.practicum.dto.store.enums.ProductCategory;
-import ru.yandex.practicum.feign.StoreClient;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.dto.PageableDto;
+import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
 import ru.yandex.practicum.service.StoreService;
+import ru.yandex.practicum.type.ProductCategory;
 
 import java.util.UUID;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/shopping-store")
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class StoreController implements StoreClient {
-    final StoreService storeService;
+public class StoreController {
 
-    @Override
-    public ListProductsResponse getProducts(ProductCategory category, Pageable pageable) {
-        log.info("Получен запрос на список товаров категории = {}", category);
-        return storeService.getProductsByCategory(category, pageable);
+    private final StoreService storeService;
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    public Page<ProductDto> getProductByCategory(@RequestParam ProductCategory category, @Valid PageableDto pageableDto) {
+        return storeService.getProductsByCategory(category, pageableDto);
     }
 
-    @Override
-    public ProductDto createProduct(ProductDto productDto) {
-        log.info("Получен запрос на создание товара с именем = {}", productDto.getProductName());
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping
+    public ProductDto createProduct(@RequestBody ProductDto productDto) {
         return storeService.createProduct(productDto);
+
     }
 
-    @Override
-    public ProductDto updateProduct(ProductDto productDto) {
-        log.info("Получен запрос на обновление товара с именем = {}", productDto.getProductName());
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping
+    public ProductDto updateProduct(@RequestBody ProductDto productDto) {
         return storeService.updateProduct(productDto);
     }
 
-    @Override
-    public Boolean removeProduct(UUID productId) {
-        log.info("Получен запрос на удаление товара с id = {}", productId);
-        return storeService.removeProduct(productId);
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/removeProductFromStore")
+    public boolean removeProductFromStore(@RequestBody UUID productId) {
+        return storeService.removeProductFromStore(productId);
     }
 
-    @Override
-    public Boolean setQuantityState(SetProductQuantityStateRequest request) {
-        log.info("Получен запрос на установку количества товара с id = {}", request.getProductId());
-        return storeService.setQuantityState(request);
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/quantityState")
+    public boolean updateProductQuantityState(SetProductQuantityStateRequest request) {
+        return storeService.updateProductQuantityState(request);
     }
 
-    @Override
-    public ProductDto getProductById(UUID productId) {
-        log.info("Получен запрос на получение товара с id = {}", productId);
-        return storeService.getProductById(productId);
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("{productId}")
+    public ProductDto getProductById(@PathVariable UUID productId) {
+        return storeService.getInfoProductById(productId);
     }
 }

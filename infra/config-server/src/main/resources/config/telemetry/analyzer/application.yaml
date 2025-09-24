@@ -1,7 +1,8 @@
+
 grpc:
   client:
     hub-router:
-      address: static://localhost:59090
+      address: 'static://localhost:59090'
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext
@@ -11,9 +12,9 @@ spring:
     name: analyzer
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6555/smarthome
-    username: smarthome
-    password: smarthome
+    url: jdbc:postgresql://localhost:6432/analyzer
+    username: user
+    password: password
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:

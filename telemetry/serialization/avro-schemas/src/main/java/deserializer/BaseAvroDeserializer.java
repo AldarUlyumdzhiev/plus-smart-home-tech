@@ -1,37 +1,38 @@
 package deserializer;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.avro.Schema;
-import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.springframework.kafka.support.serializer.DeserializationException;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+@RequiredArgsConstructor
 public class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deserializer<T> {
+
     private final DecoderFactory decoderFactory;
-    private final DatumReader<T> reader;
+    private final Schema schema;
 
     public BaseAvroDeserializer(Schema schema) {
         this(DecoderFactory.get(), schema);
     }
 
-    public BaseAvroDeserializer(DecoderFactory decoderFactory, Schema schema) {
-        this.decoderFactory = decoderFactory;
-        this.reader = new SpecificDatumReader<>(schema);
-    }
-
     @Override
     public T deserialize(String topic, byte[] data) {
-        try {
-            if (data != null) {
-                BinaryDecoder decoder = decoderFactory.binaryDecoder(data, null);
-                return this.reader.read(null, decoder);
-            }
+        if (data == null || data.length == 0) {
             return null;
-        } catch (Exception e) {
-            throw new DeserializationException("Ошибка десериализации данных из топика [" + topic + "]", data, false, e);
+        }
+        try (ByteArrayInputStream input = new ByteArrayInputStream(data)) {
+            Decoder decoder = decoderFactory.binaryDecoder(input, null);
+            DatumReader<T> reader = new SpecificDatumReader<>(schema);
+            return reader.read(null, decoder);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to deserialize Avro data", e);
         }
     }
 }
