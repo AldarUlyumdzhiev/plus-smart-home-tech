@@ -1,75 +1,44 @@
 services:
-  analyzer-db:
-    image: postgres:17.5
-    container_name: analyzer-db
+  db:
+    image: postgres:16.1
+    container_name: db
     ports:
-      - "5433:5432"
-    volumes:
-      - ./volumes/postgres/analyzer-db_data:/var/lib/postgresql/data
+      - "5432:5432"
     environment:
-      POSTGRES_USER: analyzer
-      POSTGRES_PASSWORD: analyzer
-      POSTGRES_DB: analyzer
-    healthcheck:
-      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
-      interval: 10s
-      timeout: 5s
-      start_period: 10s
-      retries: 5
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=username
+      - POSTGRES_DB=scenario-db
 
   store-db:
     image: postgres:16.1
     container_name: store-db
     ports:
-      - "5434:5432"
-    volumes:
-      - ./volumes/postgres/shop-db_data:/var/lib/postgresql/data
+      - "6432:5432"
     environment:
-      POSTGRES_DB: store
-      POSTGRES_USER: store
-      POSTGRES_PASSWORD: store
-    healthcheck:
-      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
-      interval: 10s
-      timeout: 5s
-      start_period: 10s
-      retries: 5
+      - POSTGRES_PASSWORD=store
+      - POSTGRES_USER=store
+      - POSTGRES_DB=store-db
 
   cart-db:
     image: postgres:16.1
     container_name: cart-db
     ports:
-      - "5435:5432"
-    volumes:
-      - ./volumes/postgres/cart-db_data:/var/lib/postgresql/data
+      - "7432:5432"
     environment:
-      POSTGRES_DB: cart
-      POSTGRES_USER: cart
-      POSTGRES_PASSWORD: cart
-    healthcheck:
-      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
-      interval: 10s
-      timeout: 5s
-      start_period: 10s
-      retries: 5
+      - POSTGRES_PASSWORD=cart
+      - POSTGRES_USER=cart
+      - POSTGRES_DB=cart-db
+
 
   warehouse-db:
     image: postgres:16.1
     container_name: warehouse-db
     ports:
-      - "5436:5432"
-    volumes:
-      - ./volumes/postgres/warehouse-db_data:/var/lib/postgresql/data
+       - "8432:5432"
     environment:
-      POSTGRES_DB: warehouse
-      POSTGRES_USER: warehouse
-      POSTGRES_PASSWORD: warehouse
-    healthcheck:
-      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
-      interval: 10s
-      timeout: 5s
-      start_period: 10s
-      retries: 5
+      - POSTGRES_PASSWORD=warehouse
+      - POSTGRES_USER=warehouse
+      - POSTGRES_DB=warehouse-db
 
   kafka:
     image: confluentinc/confluent-local:7.4.3
