@@ -1,73 +1,74 @@
 services:
-  postgres:
-    image: postgres:15
-    container_name: analyzer_postgres
-    environment:
-      POSTGRES_DB: analyzer
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+  analyzer-db:
+    image: postgres:17.5
+    container_name: analyzer-db
     ports:
-      - "6432:5432"
+      - "5433:5432"
     volumes:
-      - analyzer-postgres-data:/var/lib/postgresql/data
+      - ./volumes/postgres/analyzer-db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: analyzer
+      POSTGRES_PASSWORD: analyzer
+      POSTGRES_DB: analyzer
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d analyzer"]
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
       interval: 10s
       timeout: 5s
+      start_period: 10s
       retries: 5
 
-  # --- shopping-cart BD ---
-  shopping-cart-postgres:
-    image: postgres:15
-    container_name: shopping_cart_postgres
-    environment:
-      POSTGRES_DB: shopping_cart
-      POSTGRES_USER: shopping
-      POSTGRES_PASSWORD: shopping123
+  store-db:
+    image: postgres:16.1
+    container_name: store-db
     ports:
       - "5434:5432"
     volumes:
-      - shopping-cart-postgres-data:/var/lib/postgresql/data
+      - ./volumes/postgres/shop-db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: store
+      POSTGRES_USER: store
+      POSTGRES_PASSWORD: store
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shopping -d shopping_cart"]
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
       interval: 10s
       timeout: 5s
+      start_period: 10s
       retries: 5
 
-  # --- shopping-store BD ---
-  shopping-store-postgres:
-    image: postgres:15
-    container_name: shopping_store_postgres
-    environment:
-      POSTGRES_DB: shopping_store
-      POSTGRES_USER: store
-      POSTGRES_PASSWORD: store123
+  cart-db:
+    image: postgres:16.1
+    container_name: cart-db
     ports:
       - "5435:5432"
     volumes:
-      - shopping-store-postgres-data:/var/lib/postgresql/data
+      - ./volumes/postgres/cart-db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: cart
+      POSTGRES_USER: cart
+      POSTGRES_PASSWORD: cart
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U store -d shopping_store"]
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
       interval: 10s
       timeout: 5s
+      start_period: 10s
       retries: 5
 
-  # --- warehouse BD ---
-  warehouse-postgres:
-    image: postgres:15
-    container_name: warehouse_postgres
-    environment:
-      POSTGRES_DB: warehouse
-      POSTGRES_USER: warehouse
-      POSTGRES_PASSWORD: warehouse123
+  warehouse-db:
+    image: postgres:16.1
+    container_name: warehouse-db
     ports:
       - "5436:5432"
     volumes:
-      - warehouse-postgres-data:/var/lib/postgresql/data
+      - ./volumes/postgres/warehouse-db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: warehouse
+      POSTGRES_USER: warehouse
+      POSTGRES_PASSWORD: warehouse
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U warehouse -d warehouse"]
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
       interval: 10s
       timeout: 5s
+      start_period: 10s
       retries: 5
 
   kafka:
@@ -104,10 +105,3 @@ services:
                              --partitions 1 --replication-factor 1 --if-not-exists \
                              --bootstrap-server kafka:29092'"
     init: true
-
-volumes:
-  analyzer-postgres-data:
-  commerce-postgres-data:
-  shopping-cart-postgres-data:
-  shopping-store-postgres-data:
-  warehouse-postgres-data:
