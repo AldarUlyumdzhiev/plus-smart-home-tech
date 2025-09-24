@@ -30,12 +30,16 @@ public class ShoppingStoreController {
     }
 
     @GetMapping
-    public Page<ProductDto> findProductsByCategory(@RequestParam String category,
+    public Page<ProductDto> findProductsByCategory(@RequestParam(required = false) String category,
                                                    @RequestParam(defaultValue = "0") Integer page,
                                                    @RequestParam(defaultValue = "10") Integer size,
                                                    @RequestParam(defaultValue = "productName") String sort) {
         log.info("Получение списка товаров по типу в пагинированном виде.");
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, sort);
+
+        if (category == null || category.isBlank()) {
+            return shoppingStoreService.findAllProducts(pageable);
+        }
         return shoppingStoreService.findProductsByProductCategory(category, pageable);
     }
 

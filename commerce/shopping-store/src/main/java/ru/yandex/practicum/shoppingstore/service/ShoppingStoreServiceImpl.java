@@ -107,4 +107,10 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
 
         return true;
     }
+
+    @Override
+    public Page<ProductDto> findAllProducts(Pageable pageable) {
+        return shoppingStoreRepository.findAll(pageable)
+                .map(ProductMapper.INSTANCE::productToProductDto);
+    }
 }

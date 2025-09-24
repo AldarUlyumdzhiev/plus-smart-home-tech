@@ -20,4 +20,6 @@ public interface ShoppingStoreService {
 
     Boolean setProductQuantityState(SetProductQuantityStateRequest setProductQuantityStateRequest);
 
+    Page<ProductDto> findAllProducts(Pageable pageable);
+
 }
