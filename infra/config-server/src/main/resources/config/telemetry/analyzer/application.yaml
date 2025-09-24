@@ -1,49 +1,48 @@
 spring:
-  application:
-    name: analyzer
-  sql:
-    init:
-      mode: always
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      client-id: HubEventConsumer
+      group-id: hubEvent.group.id
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: deserializer.HubEventDeserializer
+      enable-auto-commit: false
+
+      snapshots:
+        client-id: SnapshotsConsumer
+        group-id: snapshot.group.id
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: deserializer.SnapshotDeserializer
+        enable-auto-commit: false
+
   jpa:
     hibernate:
       ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+  sql:
+    init:
+      mode: always
+
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6542/scenario
-    username: main
-    password: main
+    url: jdbc:postgresql://localhost:5432/scenario-db
+    username: username
+    password: password
 
-logging:
-  level:
-    ru.yandex.practicum: TRACE
-    org:
-      springframework: ERROR
-      apache.kafka: WARN
+kafka:
+  topics:
+    hub-events: telemetry.hubs.v1
+    snapshots: telemetry.snapshots.v1
 
 grpc:
   client:
     hub-router:
-      address: 'static://localhost:59090'
+      address: discovery:/hub-router
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext
-
-analyzer:
-  kafka:
-    hub-event-consumer-props:
-      bootstrap.servers: localhost:9092
-      client.id: "hubConsumer"
-      group.id: "analyzer-hub-event-group"
-      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value.deserializer: kafka.serializer.HubEventDeserializer
-      enable.auto.commit: false
-    snapshot-consumer-props:
-      bootstrap.servers: localhost:9092
-      client.id: "snapshotConsumer"
-      group.id: "aggregator-snapshot-group"
-      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value.deserializer: kafka.serializer.SensorSnapshotDeserializer
-      enable.auto.commit: false
-    topics:
-      hubs-events: telemetry.hubs.v1
-      sensors-snapshots: telemetry.snapshots.v1

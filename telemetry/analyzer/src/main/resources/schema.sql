@@ -1,56 +1,47 @@
-DROP TABLE IF EXISTS scenario_actions;
-DROP TABLE IF EXISTS scenario_conditions;
-DROP TABLE IF EXISTS actions;
-DROP TABLE IF EXISTS conditions;
-DROP TABLE IF EXISTS sensors;
-DROP TABLE IF EXISTS scenarios;
-
 -- создаём таблицу scenarios
 CREATE TABLE IF NOT EXISTS scenarios (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    hub_id VARCHAR(20),
-    name VARCHAR(50),
-    UNIQUE(hub_id, name)
-);
+                                         id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                                         hub_id VARCHAR,
+                                         name VARCHAR,
+                                         UNIQUE(hub_id, name)
+    );
 
 -- создаём таблицу sensors
 CREATE TABLE IF NOT EXISTS sensors (
-    id VARCHAR(50) PRIMARY KEY,
-    hub_id VARCHAR(20)
+                                       id VARCHAR PRIMARY KEY,
+                                       hub_id VARCHAR
 );
 
 -- создаём таблицу conditions
--- в связи с тем, что value в avro бывает двух типов, разделил варианты на два поля
 CREATE TABLE IF NOT EXISTS conditions (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    type VARCHAR(20),
-    operation VARCHAR(20),
-    value_int INTEGER,
-    value_bool BOOLEAN
+                                          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                                          type VARCHAR,
+                                          operation VARCHAR,
+                                          value INTEGER
 );
 
 -- создаём таблицу actions
 CREATE TABLE IF NOT EXISTS actions (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    type VARCHAR(20),
-    value INTEGER
+                                       id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                                       type VARCHAR,
+                                       value INTEGER
 );
 
 -- создаём таблицу scenario_conditions, связывающую сценарий, датчик и условие активации сценария
 CREATE TABLE IF NOT EXISTS scenario_conditions (
-    scenario_id BIGINT REFERENCES scenarios(id),
-    sensor_id VARCHAR(50) REFERENCES sensors(id),
-    condition_id BIGINT REFERENCES conditions(id),
-    PRIMARY KEY (scenario_id, sensor_id, condition_id)
-);
+                                                    scenario_id BIGINT REFERENCES scenarios(id),
+                                                    sensor_id VARCHAR REFERENCES sensors(id),
+                                                    condition_id BIGINT REFERENCES conditions(id),
+                                                    PRIMARY KEY (scenario_id, sensor_id, condition_id)
+    );
 
 -- создаём таблицу scenario_actions, связывающую сценарий, датчик и действие, которое нужно выполнить при активации сценария
 CREATE TABLE IF NOT EXISTS scenario_actions (
-    scenario_id BIGINT REFERENCES scenarios(id),
-    sensor_id VARCHAR(50) REFERENCES sensors(id),
-    action_id BIGINT REFERENCES actions(id),
-    PRIMARY KEY (scenario_id, sensor_id, action_id)
-);
+                                                scenario_id BIGINT REFERENCES scenarios(id),
+                                                sensor_id VARCHAR REFERENCES sensors(id),
+                                                action_id BIGINT REFERENCES actions(id),
+                                                PRIMARY KEY (scenario_id, sensor_id, action_id)
+    );
 
 -- создаём функцию для проверки, что связываемые сценарий и датчик работают с одним и тем же хабом
 CREATE OR REPLACE FUNCTION check_hub_id()
