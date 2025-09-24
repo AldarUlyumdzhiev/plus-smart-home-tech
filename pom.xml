@@ -40,6 +40,17 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!--    Spring Cloud Config        -->
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud-dependencies.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
@@ -56,14 +67,6 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc-openapi-starter.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud-dependencies.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
 
             <!--    GRPC dependencies management        -->
@@ -91,6 +94,7 @@
                 <version>${grpc.version}</version>
             </dependency>
 
+            <!--    / GRPC dependencies management        -->
         </dependencies>
     </dependencyManagement>
 

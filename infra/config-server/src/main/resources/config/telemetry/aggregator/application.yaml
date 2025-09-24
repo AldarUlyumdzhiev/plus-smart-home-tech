@@ -1,26 +1,13 @@
 aggregator:
-  producer-properties:
-    bootstrap.servers: localhost:9092
-    key.serializer: org.apache.kafka.common.serialization.VoidSerializer
-    value.serializer: ru.yandex.practicum.kafka.serializer.GeneralKafkaSerializer
-  snapshot-topic: telemetry.snapshots.v1
+  kafka:
+    consumer:
+      bootstrap.servers: localhost:9092
+      group.id: sensor-aggregator
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: ru.yandex.practicum.aggregator.deserializer.SensorEventDeserializer
+      auto.offset.reset: earliest
 
-  consumer-properties:
-    bootstrap.servers: localhost:9092
-    group.id: sensor.aggregation
-    client.id: aggregatorConsumer
-    key.deserializer: org.apache.kafka.common.serialization.VoidDeserializer
-    value.deserializer: ru.yandex.practicum.kafka.deserializer.SensorEventDeserializer
-    enable.auto.commit: false
-  sensor-topic:
-    - telemetry.sensors.v1
-  consume-attempt-timeout: 1000
-
-spring:
-  application:
-    name: aggregator
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+    producer:
+      bootstrap.servers: localhost:9092
+      key.serializer: org.apache.kafka.common.serialization.StringSerializer
+      value.serializer: ru.yandex.practicum.aggregator.serializer.GeneralAvroSerializer
