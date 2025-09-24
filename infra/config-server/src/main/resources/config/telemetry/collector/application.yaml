@@ -6,11 +6,6 @@ spring:
   application:
     name: collector
 
-grpc:
-  server:
-    port: 59091
-    reflection-service-enabled: true
-
 eureka:
   client:
     serviceUrl:
