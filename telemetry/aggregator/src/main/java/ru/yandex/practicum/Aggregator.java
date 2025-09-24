@@ -10,8 +10,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class Aggregator {
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Aggregator.class, args);
+
         AggregationStarter aggregator = context.getBean(AggregationStarter.class);
+
         Runtime.getRuntime().addShutdownHook(new Thread(aggregator::stop));
+
         aggregator.start();
     }
 }
