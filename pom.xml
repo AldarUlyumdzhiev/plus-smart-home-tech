@@ -19,6 +19,7 @@
         <module>telemetry</module>
         <module>infra</module>
         <module>commerce</module>
+        <module>commerce/interaction-api</module>
     </modules>
 
     <properties>
@@ -40,9 +41,6 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <!--    Spring Cloud Config        -->
-
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
