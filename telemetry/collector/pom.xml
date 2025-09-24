@@ -71,10 +71,11 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>3.3.4</version>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.collector.CollectorApplication</mainClass>
+                    <mainClass>ru.yandex.practicum.Collector</mainClass>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
 
 </project>
