@@ -4,20 +4,20 @@ package telemetry.message.event;
 
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
-
 import "google/protobuf/timestamp.proto";
 
 message HubEventProto {
   string hub_id = 1;
   google.protobuf.Timestamp timestamp = 2;
   oneof payload {
-    DeviceAddedEventProto device_added_event = 3;
-    DeviceRemovedEventProto device_removed_event = 4;
-    ScenarioAddedEventProto scenario_added_event = 5;
-    ScenarioRemovedEventProto scenario_removed_event = 6;
-  };
+    DeviceAddedEventProto device_added = 3;
+    DeviceRemovedEventProto device_removed = 4;
+    ScenarioAddedEventProto scenario_added = 5;
+    ScenarioRemovedEventProto scenario_removed = 6;
+  }
 }
 
+// события (де)регистрации устройств
 enum DeviceTypeProto {
   MOTION_SENSOR = 0;
   TEMPERATURE_SENSOR = 1;
@@ -73,13 +73,6 @@ message DeviceActionProto {
   optional int32 value = 3;
 }
 
-message DeviceActionRequest {
-   string hub_id = 1;
-   string scenario_name = 2;
-   DeviceActionProto action = 3;
-   google.protobuf.Timestamp timestamp = 4;
-}
-
 message ScenarioAddedEventProto {
   string name = 1;
   repeated ScenarioConditionProto condition = 2;
@@ -88,4 +81,11 @@ message ScenarioAddedEventProto {
 
 message ScenarioRemovedEventProto {
   string name = 1;
+}
+
+message DeviceActionRequest {
+  string hub_id = 1;
+  string scenario_name = 2;
+  DeviceActionProto action = 3;
+  google.protobuf.Timestamp timestamp = 4;
 }
