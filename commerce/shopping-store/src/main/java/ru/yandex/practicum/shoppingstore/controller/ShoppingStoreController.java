@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.iteractionapi.dto.ProductDto;
 import ru.yandex.practicum.iteractionapi.enums.QuantityState;
@@ -30,18 +31,16 @@ public class ShoppingStoreController {
     }
 
     @GetMapping
-    public Page<ProductDto> findProductsByCategory(@RequestParam(required = false) String category,
-                                                   @RequestParam(defaultValue = "0") Integer page,
-                                                   @RequestParam(defaultValue = "10") Integer size,
-                                                   @RequestParam(defaultValue = "productName") String sort) {
+    public Page<ProductDto> findProductsByCategory(
+            @RequestParam(required = false) String category,
+            @PageableDefault(sort = "productName", direction = Sort.Direction.ASC) Pageable pageable) {
         log.info("Получение списка товаров по типу в пагинированном виде.");
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, sort);
-
         if (category == null || category.isBlank()) {
             return shoppingStoreService.findAllProducts(pageable);
         }
         return shoppingStoreService.findProductsByProductCategory(category, pageable);
     }
+
 
 
     @PutMapping
