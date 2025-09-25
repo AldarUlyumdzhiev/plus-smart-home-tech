@@ -15,10 +15,7 @@ import ru.yandex.practicum.shoppingcart.mapper.ShoppingCartMapper;
 import ru.yandex.practicum.shoppingcart.model.ShoppingCart;
 import ru.yandex.practicum.shoppingcart.repository.ShoppingCartRepository;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -38,54 +35,57 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public ShoppingCart findShoppingCartByUser(String username) {
         log.info("Поиск активной корзины для пользователя: {}", username);
         checkUsername(username);
 
-        Optional<ShoppingCart> shoppingCart = shoppingCartRepository.findByUsernameAndActive(username, true);
-
-        if (shoppingCart.isEmpty()) {
-            log.info("Активная корзина не найдена. Создание новой корзины для пользователя: {}", username);
-            ShoppingCart newCart = new ShoppingCart();
-            newCart.setUsername(username);
-            newCart.setActive(true);
-
-            shoppingCart = Optional.of(shoppingCartRepository.save(newCart));
-            log.info("Новая корзина создана (id корзины =: {}) для пользователя: {}",
-                    shoppingCart.get().getShoppingCartId(), username);
-        } else {
-            log.debug("Найдена существующая корзина (id корзины =: {}) для пользователя: {}",
-                    shoppingCart.get().getShoppingCartId(), username);
+        Optional<ShoppingCart> opt = shoppingCartRepository.findByUsernameAndActive(username, true);
+        if (opt.isPresent()) {
+            ShoppingCart cart = opt.get();
+            if (cart.getProducts() == null) {
+                cart.setProducts(new HashMap<>());
+                cart = shoppingCartRepository.save(cart);
+            }
+            log.debug("Найдена существующая корзина (id =: {}) для пользователя: {}", cart.getShoppingCartId(), username);
+            return cart;
         }
-        return shoppingCart.get();
+
+        log.info("Активная корзина не найдена. Создаю новую для пользователя: {}", username);
+        ShoppingCart newCart = ShoppingCart.builder()
+                .username(username)
+                .active(true)
+                .products(new HashMap<>())
+                .build();
+        newCart = shoppingCartRepository.save(newCart);
+        log.info("Новая корзина создана (id =: {}) для пользователя: {}", newCart.getShoppingCartId(), username);
+        return newCart;
     }
 
     @Override
     public ShoppingCartDto addProductToShoppingCart(String username, Map<UUID, Long> request) {
         log.info("Добавление товаров в корзину. Пользователь: {}, Кол-во товаров: {}", username, request.size());
-
         checkUsername(username);
-
         checkProductAvailability(request);
 
-        ShoppingCart shoppingCart = ShoppingCart.builder()
-                .username(username)
-                .products(request)
-                .active(true)
-                .build();
-        ShoppingCart savedCart = shoppingCartRepository.save(shoppingCart);
-        log.info("Товары успешно добавлены в корзину. id корзины: {}, Кол-во товаров: {}",
-                savedCart.getShoppingCartId(),
-                savedCart.getProducts().size());
+        ShoppingCart cart = findShoppingCartByUser(username);
+        if (cart.getProducts() == null) {
+            cart.setProducts(new HashMap<>());
+        }
+        cart.getProducts().putAll(request);
 
-        return shoppingCartMapper.toShoppingCartDto(savedCart);
+        cart = shoppingCartRepository.save(cart);
+        log.info("Товары добавлены. id корзины: {}, Кол-во позиций: {}", cart.getShoppingCartId(), cart.getProducts().size());
+        return shoppingCartMapper.toShoppingCartDto(cart);
     }
 
     @Override
     public void deactivateShoppingCartByUser(String username) {
         log.info("Деактивация корзины пользователя: {}", username);
         ShoppingCart cart = findShoppingCartByUser(username);
+        if (!Boolean.TRUE.equals(cart.getActive())) {
+            return;
+        }
         cart.setActive(false);
         shoppingCartRepository.save(cart);
     }
@@ -94,15 +94,21 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartDto deleteProductsFromShoppingCart(String username, List<UUID> products) {
         log.info("Удаление товаров из корзины. Пользователь: {}, Кол-во удаляемых товаров: {}", username, products.size());
 
-        ShoppingCart shoppingCart = findShoppingCartByUser(username);
-        if (!shoppingCart.getProducts().keySet().containsAll(products)) {
-            throw new NoProductsInShoppingCartException("Товар не найден в корзине");
+        ShoppingCart cart = findShoppingCartByUser(username);
+        Map<UUID, Long> map = cart.getProducts();
+        if (map == null || map.isEmpty()) {
+            throw new NoProductsInShoppingCartException("В корзине нет товаров для удаления");
         }
-        products.forEach(shoppingCart.getProducts()::remove);
 
-        shoppingCart = shoppingCartRepository.save(shoppingCart);
+        if (!map.keySet().containsAll(products)) {
+            throw new NoProductsInShoppingCartException("Некоторые товары не найдены в корзине");
+        }
 
-        return ShoppingCartMapper.INSTANCE.toShoppingCartDto(shoppingCart);
+        products.forEach(map::remove);
+        cart.setProducts(map);
+        cart = shoppingCartRepository.save(cart);
+
+        return ShoppingCartMapper.INSTANCE.toShoppingCartDto(cart);
     }
 
     @Override

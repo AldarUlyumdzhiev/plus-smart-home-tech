@@ -3,6 +3,7 @@ package ru.yandex.practicum.shoppingcart.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.iteractionapi.dto.ShoppingCartDto;
 import ru.yandex.practicum.iteractionapi.request.ChangeProductQuantityRequest;
@@ -33,9 +34,10 @@ public class ShoppingCartController {
     }
 
     @DeleteMapping
-    public void deactivateShoppingCartByUser(@RequestParam String username) {
+    public ResponseEntity<Void> deactivateShoppingCartByUser(@RequestParam String username) {
         log.info("Деактивация корзины товаров для пользователя {}", username);
         shoppingCartService.deactivateShoppingCartByUser(username);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/remove")
