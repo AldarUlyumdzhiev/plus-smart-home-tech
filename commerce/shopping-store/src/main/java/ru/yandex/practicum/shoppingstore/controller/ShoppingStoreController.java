@@ -33,27 +33,16 @@ public class ShoppingStoreController {
     public Page<ProductDto> findProductsByCategory(@RequestParam(required = false) String category,
                                                    @RequestParam(defaultValue = "0") Integer page,
                                                    @RequestParam(defaultValue = "10") Integer size,
-                                                   @RequestParam(defaultValue = "productName,ASC") String[] sort) {
+                                                   @RequestParam(defaultValue = "productName") String sort) {
         log.info("Получение списка товаров по типу в пагинированном виде.");
-
-        // sort[0] = поле, sort[1] = направление (если есть)
-        Sort.Direction direction = Sort.Direction.ASC;
-        String sortBy = "productName";
-
-        if (sort.length > 0) {
-            sortBy = sort[0];
-        }
-        if (sort.length > 1) {
-            direction = Sort.Direction.fromString(sort[1]);
-        }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, sort);
 
         if (category == null || category.isBlank()) {
             return shoppingStoreService.findAllProducts(pageable);
         }
         return shoppingStoreService.findProductsByProductCategory(category, pageable);
     }
+
 
     @PutMapping
     public ProductDto createProduct(@RequestBody @Valid ProductDto productDto) {
