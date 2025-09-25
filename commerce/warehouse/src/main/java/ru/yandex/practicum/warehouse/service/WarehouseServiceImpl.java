@@ -39,7 +39,10 @@ public class WarehouseServiceImpl implements WarehouseService {
         log.info("Добавление нового товара на склад. id товара: {}", request.getProductId());
 
         warehouseRepository.findById(request.getProductId()).ifPresent(warehouse -> {
-            String errorMessage = "Товар с id =  " + request.getProductId() + " уже зарегистрирован на складе";
+            String errorMessage = String.format(
+                    "Товар с id = %s уже зарегистрирован на складе",
+                    request.getProductId()
+            );
             log.error(errorMessage);
             throw new SpecifiedProductAlreadyInWarehouseException(errorMessage);
         });
@@ -53,20 +56,19 @@ public class WarehouseServiceImpl implements WarehouseService {
                 savedWarehouse.getQuantity());
     }
 
-
     @Override
     public void addProductToWarehouse(AddProductToWarehouseRequest request) {
         log.info("Добавление товара на склад. id товара: {}, Количество: {}",
                 request.getProductId(),
                 request.getQuantity());
+
         Warehouse product = warehouseRepository.findById(request.getProductId())
-                .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Товар c id =" +
-                        request.getProductId() + " не найден на складе."));
+                .orElseThrow(() -> new NoSpecifiedProductInWarehouseException(
+                        String.format("Товар c id = %s не найден на складе.", request.getProductId())
+                ));
 
         product.setQuantity(product.getQuantity() + request.getQuantity());
-
         warehouseRepository.save(product);
-
     }
 
     public BookedProductsDto checkProductQuantityForCart(ShoppingCartDto shoppingCartDto) {
@@ -84,16 +86,19 @@ public class WarehouseServiceImpl implements WarehouseService {
 
         cartProductIds.forEach(id -> {
             if (!productIds.contains(id)) {
-                String errorMessage = "Товар c id =" + id + " не найден на складе";
+                String errorMessage = String.format("Товар c id = %s не найден на складе", id);
                 log.error(errorMessage);
                 throw new ProductNotFoundInWarehouseException(errorMessage);
             }
         });
+
         products.forEach((key, value) -> {
             long availableQuantity = warehouseProducts.get(key).getQuantity();
             if (availableQuantity < value) {
-                String errorMessage = String.format("Недостаточно товара %s на складе (требуется: %d, доступно: %d)",
-                        key, value, availableQuantity);
+                String errorMessage = String.format(
+                        "Недостаточно товара %s на складе (требуется: %d, доступно: %d)",
+                        key, value, availableQuantity
+                );
                 log.error(errorMessage);
                 throw new ProductInShoppingCartLowQuantityInWarehouseException(errorMessage);
             }
