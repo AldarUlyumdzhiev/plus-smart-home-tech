@@ -1,11 +1,9 @@
 package ru.yandex.practicum.entities;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.entities.embedded.ScenarioConditionId;
 
 @Entity
@@ -13,20 +11,19 @@ import ru.yandex.practicum.entities.embedded.ScenarioConditionId;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level= AccessLevel.PRIVATE)
 public class ScenarioConditions {
     @EmbeddedId
-    ScenarioConditionId id;
+    private ScenarioConditionId id;
 
     @ManyToOne
     @MapsId("scenarioId")
     @JoinColumn(name = "scenario_id")
-    Scenario scenario;
+    private Scenario scenario;
 
     @ManyToOne
     @MapsId("sensorId")
     @JoinColumn(name = "sensor_id")
-    Sensor sensor;
+    private Sensor sensor;
 
     /*@ManyToOne
     @MapsId("conditionId")
