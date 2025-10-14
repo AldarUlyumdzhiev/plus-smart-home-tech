@@ -36,15 +36,14 @@
         <postgresql.version>42.7.5</postgresql.version>
         <modelmapper.version>3.2.0</modelmapper.version>
 
-        <!-- MapStruct -->
-        <mapstruct.version>1.6.2.Final</mapstruct.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
 
-        <!-- Plugins -->
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <avro-maven-plugin.version>${avro.version}</avro-maven-plugin.version>
         <protobuf-plugin.version>2.4.0</protobuf-plugin.version>
         <spring-kafka.version>3.2.4</spring-kafka.version>
     </properties>
+
 
     <dependencyManagement>
         <dependencies>
@@ -66,7 +65,6 @@
                 <version>${springdoc-openapi-starter.version}</version>
             </dependency>
 
-            <!-- GRPC -->
             <dependency>
                 <groupId>net.devh</groupId>
                 <artifactId>grpc-spring-boot-starter</artifactId>
@@ -87,9 +85,7 @@
                 <artifactId>grpc-protobuf</artifactId>
                 <version>${grpc.version}</version>
             </dependency>
-            <!-- /GRPC -->
 
-            <!-- MapStruct (управление версиями) -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
@@ -101,7 +97,6 @@
                 <version>${mapstruct.version}</version>
             </dependency>
 
-            <!-- Lombok под управление версиями (по желанию) -->
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
@@ -119,37 +114,16 @@
     </dependencyManagement>
 
     <build>
-        <!-- Настройка плагина компилятора с процессорами аннотаций, наследуется всеми модулями -->
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-        </plugins>
-
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.avro</groupId>
