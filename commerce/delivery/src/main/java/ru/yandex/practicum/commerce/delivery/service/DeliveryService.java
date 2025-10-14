@@ -56,9 +56,9 @@ public class DeliveryService {
             orderClient.completed(orderId);
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.NOT_FOUND.value()) {
-                throw new NoOrderFoundException("Order with ID " + orderId + " not found");
+                throw new NoOrderFoundException(String.format("Order with ID %s not found", orderId));
             }
-            throw new RemoteServiceException("Error in the remote service 'warehouse");
+            throw new RemoteServiceException("Error in the remote service 'warehouse'");
         }
         delivery.setDeliveryState(DeliveryState.DELIVERED);
         deliveryRepository.save(delivery);
@@ -76,15 +76,15 @@ public class DeliveryService {
                     .orderId(orderId)
                     .build());
         } catch (FeignException ex) {
-            throw new RemoteServiceException("Error in the remote service 'warehouse");
+            throw new RemoteServiceException("Error in the remote service 'warehouse'");
         }
         try {
             orderClient.assembly(orderId);
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.NOT_FOUND.value()) {
-                throw new NoOrderFoundException("Order with ID " + orderId + " not found");
+                throw new NoOrderFoundException(String.format("Order with ID %s not found", orderId));
             }
-            throw new RemoteServiceException("Error in the remote service 'warehouse");
+            throw new RemoteServiceException("Error in the remote service 'warehouse'");
         }
         deliveryRepository.save(delivery);
         log.info("Delivery has been picked: {}", delivery);
@@ -99,7 +99,7 @@ public class DeliveryService {
             orderClient.deliveryFailed(orderId);
         } catch (FeignException ex) {
             if (ex.status() == HttpStatus.NOT_FOUND.value()) {
-                throw new NoOrderFoundException("Order with ID " + orderId + " not found");
+                throw new NoOrderFoundException(String.format("Order with ID %s not found", orderId));
             }
             throw new RemoteServiceException("Error in the remote service 'order'");
         }
@@ -137,6 +137,7 @@ public class DeliveryService {
 
     private Delivery getDeliveryByDeliveryId(UUID deliveryId) {
         return deliveryRepository.findById(deliveryId)
-                .orElseThrow(() -> new NoDeliveryFoundException("Not found delivery with ID: " + deliveryId));
+                .orElseThrow(() ->
+                        new NoDeliveryFoundException(String.format("Not found delivery with ID: %s", deliveryId)));
     }
 }

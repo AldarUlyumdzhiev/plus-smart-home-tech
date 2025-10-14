@@ -45,7 +45,7 @@ public class PaymentService {
             deliveryTotal = deliveryClient.deliveryCost(order);
         } catch (FeignException ex) {
             if (ex.status() == 404) {
-                throw new NoOrderFoundException("Order with ID = " + order.getOrderId() + " not found");
+                throw new NoOrderFoundException(String.format("Order with ID %s not found", order.getOrderId()));
             }
             throw new RemoteServiceException("Error in the remote service 'delivery'");
         }
@@ -61,7 +61,7 @@ public class PaymentService {
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
-        log.info("Payment saved: " + savedPayment);
+        log.info("Payment saved: {}", savedPayment);
         return modelMapper.map(savedPayment, PaymentDto.class);
     }
 
@@ -73,7 +73,7 @@ public class PaymentService {
         try {
             deliveryCost = deliveryClient.deliveryCost(order);
         } catch (FeignException ex) {
-            throw new RemoteServiceException("Error in the remote service 'order'");
+            throw new RemoteServiceException("Error in the remote service 'delivery'");
         }
         log.info("Total cost for order {} has been calculated", order);
         return productCost.add(tax).add(deliveryCost);
@@ -88,7 +88,7 @@ public class PaymentService {
             orderClient.payment(payment.getOrderId());
         } catch (FeignException ex) {
             if (ex.status() == 404) {
-                throw new NoOrderFoundException("No order found with id " + payment.getOrderId());
+                throw new NoOrderFoundException(String.format("No order found with id %s", payment.getOrderId()));
             }
             throw new RemoteServiceException("Error in the remote service 'order'");
         }
@@ -115,7 +115,7 @@ public class PaymentService {
             orderClient.payment(payment.getOrderId());
         } catch (FeignException ex) {
             if (ex.status() == 404) {
-                throw new NoOrderFoundException("No order found with id " + payment.getOrderId());
+                throw new NoOrderFoundException(String.format("No order found with id %s", payment.getOrderId()));
             }
             throw new RemoteServiceException("Error in the remote service 'order'");
         }
@@ -125,6 +125,6 @@ public class PaymentService {
 
     private Payment getPaymentById(UUID paymentId) {
         return paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new NoPaymentFoundException("No payment found for ID = " + paymentId));
+                .orElseThrow(() -> new NoPaymentFoundException(String.format("No payment found for ID %s", paymentId)));
     }
 }
