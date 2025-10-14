@@ -84,6 +84,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>ru.yandex.practicum.commerce.cart.CartApp</mainClass>
+                </configuration>
             </plugin>
 
             <plugin>
