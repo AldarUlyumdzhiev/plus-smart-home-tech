@@ -1,5 +1,6 @@
 package ru.yandex.practicum.commerce.dto.warehouse;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class AssemblyProductsForOrderRequest {
-    @NotNull
+    @NotEmpty
     Map<UUID, Long> products; // ID товара и его количество
 
     @NotNull

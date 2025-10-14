@@ -30,7 +30,7 @@ public interface PaymentApi {
      * @param order - заказ для расчета
      * @return - полная стоимость заказа
      */
-    @PostMapping("/totalCost")
+    @PostMapping("/total-cost")
     BigDecimal getTotalCost(@RequestBody @Valid OrderDto order);
 
     /**
@@ -47,7 +47,7 @@ public interface PaymentApi {
      * @param order - заказ для расчета
      * @return - стоимость товаров в заказе
      */
-    @PostMapping("/productCost")
+    @PostMapping("/product-cost")
     BigDecimal productCost(@RequestBody @NotNull OrderDto order);
 
     /**

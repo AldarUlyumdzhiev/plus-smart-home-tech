@@ -45,7 +45,7 @@ public interface ShoppingStoreApi {
      *
      * @param productID - UUID продукта
      */
-    @PostMapping("/removeProductFromStore")
+    @PostMapping("/remove-product-from-store")
     void removeProductFromStore(@RequestBody UUID productID);
 
     /**
@@ -53,7 +53,7 @@ public interface ShoppingStoreApi {
      *
      * @param productQuantityStateRequest - ID товара и новый статус
      */
-    @PostMapping("/quantityState")
+    @PostMapping("/quantity-state")
     void setProductQuantityState(@RequestBody @Valid SetProductQuantityStateRequest productQuantityStateRequest);
 
     /**

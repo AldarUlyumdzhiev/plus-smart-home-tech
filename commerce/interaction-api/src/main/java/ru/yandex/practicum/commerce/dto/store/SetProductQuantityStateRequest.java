@@ -15,6 +15,5 @@ public class SetProductQuantityStateRequest {
     @NotNull
     UUID productId; // идентификатор товара
 
-    //    @NotNull
     QuantityState quantityState; // статус, перечисляющий состояние остатка как свойства товара
 }

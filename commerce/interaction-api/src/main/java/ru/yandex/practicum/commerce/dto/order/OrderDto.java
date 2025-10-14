@@ -1,5 +1,6 @@
 package ru.yandex.practicum.commerce.dto.order;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class OrderDto {
 
     UUID shoppingCartId; // идентификатор корзины
 
-    @NotNull
+    @NotEmpty
     Map<UUID, Long> products; // отображение идентификатора товара на отобранное количество
 
     UUID paymentId; // идентификатор оплаты

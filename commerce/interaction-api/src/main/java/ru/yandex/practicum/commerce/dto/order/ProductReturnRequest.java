@@ -1,6 +1,6 @@
 package ru.yandex.practicum.commerce.dto.order;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -16,7 +16,7 @@ import java.util.UUID;
 public class ProductReturnRequest {
     UUID orderId; // идентификатор заказа
 
-    @NotNull
+    @NotEmpty
     Map<UUID, Long> products; // отображение идентификатора товара на отобранное количество
 
 }
